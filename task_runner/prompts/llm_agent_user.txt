@@ -1,0 +1,30 @@
+Use the skill instructions below to solve the task. Write a bash script
+that creates the requested output file(s).
+
+Path mapping (the SkillsBench task uses /root, /tests, etc.; on this host
+they live at the following local paths — use these, NOT the literal
+container paths):
+
+- /root             → $root_dir
+- /tests            → $tests_dir
+- /logs/verifier    → $logs_dir
+- /app/workspace    → $app_workspace
+- Task instruction  → $instruction_path
+- Skill description → $skill_path
+
+Rules:
+- The script must create the requested final output file before exiting.
+- Do NOT run pip, apt, npm, curl, wget, or any network install command.
+- Do NOT run the verifier yourself.
+- If you use a heredoc, close it. The final script must be syntactically complete.
+- Return ONLY a bash script (you may wrap it in ```bash …``` fence, but no other prose).
+
+Skill:
+---
+$skill_text
+---
+
+Task:
+---
+$task_instruction
+---

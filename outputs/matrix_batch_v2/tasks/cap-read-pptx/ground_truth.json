@@ -1,0 +1,20 @@
+{
+  "slide_count": 3,
+  "slides": [
+    {
+      "index": 1,
+      "title": "项目周报 Q3",
+      "body": "负责人: 李雷\n状态: 进行中"
+    },
+    {
+      "index": 2,
+      "title": "Roadmap Übersicht",
+      "body": "Milestone α: 2024-07\nMilestone β: 2024-09"
+    },
+    {
+      "index": 3,
+      "title": "结论 Summary",
+      "body": "完成度 78%\n下一步: 上线灰度"
+    }
+  ]
+}

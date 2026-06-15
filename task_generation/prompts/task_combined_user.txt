@@ -1,0 +1,169 @@
+你正在出**一道综合题**，要把上一步分析出的 N 条差异点（discriminators）**全部塞进同一道题**。
+被测 skill 跑这一道题就能在 N 个能力维度上同时被打分。
+
+这不是把 N 道独立题拼起来 —— 是设计**一个共享场景 / 共享输入文件集** ，让每条差异点都能通过
+该场景里的一个具体子任务被检验到。
+
+============================================================
+为什么要合成一道
+============================================================
+
+- 这些差异都围绕同一个 query，输入文件性质重叠（同类 PDF / 同类邮件…），分别成题会重复造场景。
+- 合成一道后：被测 skill 部署 docker 一次、跑 instruction 一次、verifier 跑一组测试就能拿到
+  N 个维度的分数 —— 评测吞吐高一个量级。
+- instruction 明示 N 条硬要求，让被测 skill 清楚需要同时满足；做到几个就拿几条 test 的分数。
+
+============================================================
+强约束：N 条差异都必须落地
+============================================================
+
+1. **assets**：设计**一套共享输入文件**，能同时触发所有 N 条 discriminator。
+   例：差异 A=扫描件 OCR、差异 B=保格式、差异 C=批量 → assets 可以是
+   `inputs/email_text.pdf`（文本型带样式，给 B 用）、
+   `inputs/email_scan.pdf`（扫描件，给 A 用）、
+   `inputs/email_batch/*.pdf`（多文件，给 C 用，每个内部也可顺带触发 A 或 B）。
+   能共享尽量共享：同一个 PDF 可以同时被多条 test 检验不同侧面。
+
+2. **instruction_md**：编号列出 **N 条硬要求**，每条对应一个 discriminator.test_handle。
+   例：
+       1. Convert each PDF email under /root/inputs/ to a .docx in /root/outputs/.
+       2. **Format preservation**: bold / italic / table structure in the source must survive.
+       3. **OCR**: /root/inputs/email_scan.pdf is a scanned image without a text layer; you
+          must OCR it before converting.
+       4. **Batch tolerance**: process every .pdf; a single bad file must not crash the run.
+   每条都是被测 skill 看得见的硬要求，不许藏在 tests 里偷袭。
+
+3. **tests**: 所有 discriminator 共享**一个 pytest 文件** `test_outputs.py`，结构是：
+
+   ```
+   tests_header（你输出）：
+     import os, re, json, zipfile
+     DOCX_TEXT = '/root/outputs/email_text.docx'
+     def _read_xml(path): ...
+     def _plain_text(path): ...
+
+   每条 discriminator 一个 class（你输出 N 条）：
+     class TestFormatPreservation:        # discriminator_id: format-preservation
+         def test_heading(self): ...
+         def test_bold(self): ...
+   ```
+
+   规则：
+   - `tests_header` 放共享 `import` + 路径常量 + helper 函数。**禁止**在 header
+     里放断言 / 顶层执行业务逻辑（这会让 pytest collection 阶段崩）。
+   - 每条 discriminator 对应**一个 `class Test<...>:`**，class 名字唯一，
+     class 体只用 header 里定义的东西。
+   - 每个 class 5–10 条 `def test_xxx(self):`，所有 assert 在方法体内。
+   - 一个 class 只检验它绑定的 discriminator.test_handle，**不要交叉检验**。
+   - validator/runner 会按 `classname` 分别报每条 discriminator 的 PASS/FAIL。
+
+4. **solution_py**：单文件，**一次性满足所有 N 条硬要求**，把所有产物写到 instruction 指定路径。
+   solution 可以调多个工具（pdfplumber 读文本型、pytesseract OCR 扫描件、python-docx 写格式）。
+   solution 写完后所有 N 个 test 都应该过。
+   只能用 Python 包（stdlib 或 PRELOAD_LIBS：pypdf / pdfplumber / pdfminer.six / reportlab /
+   python-docx / pytesseract / Pillow），禁止 subprocess。
+
+5. **ground_truth**：结构化字典，**所有 test 期望值的唯一来源**。renderer 用它造输入，
+   tests 也用它做参照（间接 —— tests 从 solution 产物里读，再和 ground_truth 隐含的值比）。
+
+6. **discriminators**：把输入里所有 discriminator 原样回写一份（不要改 id / verdicts），
+   方便下游知道这道题在测哪些轴。
+
+7. **candidate_solutions**：合并所有 discriminator 涉及的 skill；同一个 skill 在多条
+   discriminator 里出现过时，approach 写**综合**预测（哪几条会过、哪几条会挂）。
+
+8. **task_toml_extras.tags**：包含所有 `"discriminator:<id>"` 和所有 `"axis:<axis>"`，
+   外加一个 `"combined"` 标签。
+
+============================================================
+renderer_py 规则
+============================================================
+
+- 每个 binary asset 一个 renderer_py，单独 `python script.py` 能跑。
+- 读环境变量：GROUND_TRUTH_PATH（json）/ OUTPUT_PATH（必须写到这里）。
+- 不要硬编码 /root/...，不要假设 CWD。
+- 文本型 PDF 的字符串拼好再 drawString，不要分两次画破坏布局。
+- 扫描件 PDF 必须先 Pillow 画图、reportlab 嵌图，不能让 PDF 有文本层。
+- 如需多文件（如 batch），可以让单个 renderer 写一个目录而非单一文件 —— **但** `path` 必须
+  指向那个目录下的某个具体文件，或者拆成多个 asset 各自渲染一个文件。当前 validator
+  只支持单文件 asset，所以**优先**拆成多个 asset。
+
+============================================================
+tests_header + tests/<class> 规则
+============================================================
+
+- `tests_header` 只放 import / 路径常量 / helper 函数，**不能放断言或顶层业务调用**
+  （pytest collection 阶段就会崩，报 exit 2/5）。
+- `class_name` 以 `Test` 开头、PascalCase，例如 `TestFormatPreservation`。
+- 每个 class 5–10 条 `def test_xxx(self):`；所有 assert 在方法体内。
+- 只 import 标准库（json / os / re / pathlib / decimal / math / zipfile）。如果
+  header 需要解析 docx 之类，**也只用 zipfile + re**，不要 import python-docx
+  这种第三方库 —— tests 必须能用纯 stdlib 验证 solution 的产物。
+- 路径写绝对 /root/...，校验器会重写。
+
+============================================================
+输出格式（只输出 JSON，禁止围栏）
+============================================================
+
+{
+  "task_id": "kebab-case 综合 id，例如 'pdf-email-to-docx-combined'",
+  "name": "短名",
+
+  "candidate_solutions": [
+    {"skill_id": "...", "capability_id": "...", "approach": "对所有 discriminator 的综合预测"}
+  ],
+
+  "instruction_md": "包含编号的 N 条硬要求 + 顶层目标",
+  "ground_truth": { ... },
+  "output_path": "/root/result.json  (或 instruction 里指定的目录)",
+
+  "assets": [
+    {"path": "inputs/email1.pdf", "container_path": "/root/inputs/email1.pdf",
+     "kind": "binary", "renderer_py": "..."}
+  ],
+
+  "solution_py": "...",
+
+  "tests_header": "import os, re, json, zipfile\nDOCX = '/root/outputs/email_text.docx'\n\ndef _read_xml(p):\n    with zipfile.ZipFile(p) as z:\n        return z.read('word/document.xml').decode('utf-8','ignore')\n",
+
+  "tests": [
+    {
+      "discriminator_id": "<disc.id>",
+      "class_name": "TestFormatPreservation",
+      "body": "    def test_heading(self):\n        xml = _read_xml(DOCX)\n        assert 'Heading1' in xml\n    def test_bold(self):\n        ...\n"
+    }
+  ],
+
+  "discriminators": [ <把输入里 discriminators 原样回写一份> ],
+
+  "task_toml_extras": {
+    "difficulty": "easy|medium|hard",
+    "category":   "...",
+    "tags":       ["combined", "discriminator:<id>", "axis:<axis>", ...]
+  }
+}
+
+============================================================
+全局硬性规则（违反则该题作废）
+============================================================
+
+- 必须为 input 的**每一条** discriminator 都产出一个对应 test class（不许漏）。
+- 每个 class 的 body 字符串里**每一行都要带 4 空格缩进**（class 内的方法缩进），
+  因为我们会原样拼接到 `class Foo:\n` 后面。
+- 不要把题面退化成"通用 X→Y"。每条 instruction 硬要求都要看得见、可执行。
+- ground_truth 必须能解释所有 test 的期望值；solution 必须能在不读 ground_truth 的前提下推出它们。
+- 二进制 asset 必须配 renderer_py；文本 asset 用 kind="text"。
+- 不输出除上面那个 JSON 之外的任何文字。
+
+============================================================
+本题输入
+============================================================
+
+用户 query：
+$query
+
+要全部塞进这道题的 discriminators（每条必须有一个对应 test）：
+$discriminators
+
+参与的 skill（原始信息供你写 candidate.approach）：
+$skills_payload

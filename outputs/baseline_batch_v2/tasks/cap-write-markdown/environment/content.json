@@ -1,0 +1,9 @@
+{
+  "title": "Quarterly Report",
+  "items": ["Revenue grew", "Costs stable", "Headcount +3"],
+  "scores": [
+    {"name": "Alice", "score": 91},
+    {"name": "Bob", "score": 85},
+    {"name": "Carol", "score": 78}
+  ]
+}

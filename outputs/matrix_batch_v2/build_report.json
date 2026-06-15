@@ -1,0 +1,161 @@
+{
+  "batch_dir": "/tmp/matrix_batch_v2",
+  "query": "Compare doc-skill capabilities for an evaluation matrix.",
+  "skill_ids": [
+    "doc-process-4.1.1",
+    "docx-compare-1.0.2",
+    "document-reader-1.0.0",
+    "document-translate-0.1.0",
+    "document-format-converter-1.0.0"
+  ],
+  "capability_ids": [
+    "cap-read-docx",
+    "cap-read-html",
+    "cap-read-image",
+    "cap-read-json",
+    "cap-read-markdown",
+    "cap-read-odt",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-rtf",
+    "cap-read-xlsx",
+    "cap-transform-tabular-to-json",
+    "cap-write-docx",
+    "cap-write-json",
+    "cap-write-markdown",
+    "cap-write-pdf",
+    "cap-write-xlsx"
+  ],
+  "outcomes": [
+    {
+      "capability_id": "cap-read-docx",
+      "ok": true,
+      "task_id": "cap-read-docx-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-docx"
+    },
+    {
+      "capability_id": "cap-read-html",
+      "ok": true,
+      "task_id": "cap-read-html-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-html"
+    },
+    {
+      "capability_id": "cap-read-image",
+      "ok": true,
+      "task_id": "cap-read-image-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-image"
+    },
+    {
+      "capability_id": "cap-read-json",
+      "ok": true,
+      "task_id": "cap-read-json-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-json"
+    },
+    {
+      "capability_id": "cap-read-markdown",
+      "ok": true,
+      "task_id": "cap-read-markdown-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-markdown"
+    },
+    {
+      "capability_id": "cap-read-odt",
+      "ok": true,
+      "task_id": "cap-read-odt-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-odt"
+    },
+    {
+      "capability_id": "cap-read-pdf",
+      "ok": true,
+      "task_id": "cap-read-pdf-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-pdf"
+    },
+    {
+      "capability_id": "cap-read-pptx",
+      "ok": true,
+      "task_id": "cap-read-pptx-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-pptx"
+    },
+    {
+      "capability_id": "cap-read-rtf",
+      "ok": true,
+      "task_id": "cap-read-rtf-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-rtf"
+    },
+    {
+      "capability_id": "cap-read-xlsx",
+      "ok": true,
+      "task_id": "cap-read-xlsx-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-read-xlsx"
+    },
+    {
+      "capability_id": "cap-transform-tabular-to-json",
+      "ok": true,
+      "task_id": "cap-transform-tabular-to-json-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-transform-tabular-to-json"
+    },
+    {
+      "capability_id": "cap-write-docx",
+      "ok": false,
+      "task_id": "cap-write-docx-mini",
+      "failure": "validate(tests): pytest exited 1",
+      "failed_stage": "tests",
+      "bundle_dir": ""
+    },
+    {
+      "capability_id": "cap-write-json",
+      "ok": true,
+      "task_id": "cap-write-json-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-write-json"
+    },
+    {
+      "capability_id": "cap-write-markdown",
+      "ok": true,
+      "task_id": "cap-write-markdown-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-write-markdown"
+    },
+    {
+      "capability_id": "cap-write-pdf",
+      "ok": true,
+      "task_id": "cap-write-pdf-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-write-pdf"
+    },
+    {
+      "capability_id": "cap-write-xlsx",
+      "ok": true,
+      "task_id": "cap-write-xlsx-mini",
+      "failure": "",
+      "failed_stage": "",
+      "bundle_dir": "/tmp/matrix_batch_v2/tasks/cap-write-xlsx"
+    }
+  ],
+  "tokens_used": 143275,
+  "elapsed_sec": 388.1
+}

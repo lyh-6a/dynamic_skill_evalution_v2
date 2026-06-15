@@ -1,0 +1,256 @@
+{
+  "schema_version": "skill-extractor-v1",
+  "skill_id": "docx-compare-1.0.2",
+  "source_path": "/home/liuyuhan/dynamic_skill_evalution/doc_skills/docx-compare-1.0.2/SKILL.md",
+  "scheduling": {
+    "skill_name": "DOCX Compare / Duplicate Check",
+    "skill_goal": "Compare two Word documents (DOCX) to find duplicate text paragraphs and duplicate images.",
+    "tags": [
+      "docx",
+      "compare",
+      "duplicate-detection",
+      "plagiarism",
+      "fuzzy-matching"
+    ],
+    "expected_inputs": [
+      "docx"
+    ],
+    "expected_outputs": [
+      "docx",
+      "txt"
+    ],
+    "dependencies": [
+      "python-docx",
+      "difflib",
+      "hashlib"
+    ]
+  },
+  "capability_candidates": [
+    {
+      "capability_id": "docx-exact-paragraph-duplicate-detection",
+      "name": "Exact paragraph duplicate detection",
+      "description": "Detect paragraphs that are identical (after normalization) across two DOCX files.",
+      "matched_terms": [
+        "精确匹配",
+        "标准化后完全相同的段落",
+        "exact string matching"
+      ],
+      "inputs": [
+        "docx"
+      ],
+      "outputs": [
+        "docx",
+        "txt"
+      ],
+      "actions": [
+        "READ",
+        "COMPARE",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Both inputs must be .docx files (not legacy .doc)",
+          "source": "explicit",
+          "evidence": "SKILL.md:72"
+        },
+        {
+          "text": "Invoked with --mode text or --mode all",
+          "source": "explicit",
+          "evidence": "SKILL.md:55"
+        },
+        {
+          "text": "--file1 and --file2 paths are required",
+          "source": "explicit",
+          "evidence": "SKILL.md:52"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Produces a *_标记重复.docx file highlighting duplicated text in the original document",
+            "source": "explicit",
+            "evidence": "SKILL.md:44"
+          },
+          {
+            "text": "Produces a *_重复报告.txt plain-text detailed comparison report",
+            "source": "explicit",
+            "evidence": "SKILL.md:46"
+          },
+          {
+            "text": "Highlight uses yellow marking and does not modify the original document",
+            "source": "explicit",
+            "evidence": "SKILL.md:75"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "Only .docx is supported; legacy .doc files are not accepted and must be converted first",
+          "source": "explicit",
+          "evidence": "SKILL.md:72"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "docx-fuzzy-paragraph-duplicate-detection",
+      "name": "Fuzzy paragraph duplicate detection",
+      "description": "Detect paragraphs whose similarity exceeds a threshold across two DOCX files using difflib.",
+      "matched_terms": [
+        "模糊匹配",
+        "相似度超过阈值的段落",
+        "fuzzy matching (difflib)",
+        "difflib.SequenceMatcher"
+      ],
+      "inputs": [
+        "docx"
+      ],
+      "outputs": [
+        "docx",
+        "txt"
+      ],
+      "actions": [
+        "READ",
+        "COMPARE",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "threshold",
+          "values": [
+            "0.90",
+            "0.95",
+            "0.99"
+          ],
+          "default": "0.95"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Both inputs must be .docx files (not legacy .doc)",
+          "source": "explicit",
+          "evidence": "SKILL.md:72"
+        },
+        {
+          "text": "Invoked with --mode text or --mode all",
+          "source": "explicit",
+          "evidence": "SKILL.md:55"
+        },
+        {
+          "text": "--file1 and --file2 paths are required",
+          "source": "explicit",
+          "evidence": "SKILL.md:52"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Paragraphs flagged as fuzzy duplicates must have similarity ≥ threshold (default 0.95)",
+            "source": "explicit",
+            "evidence": "SKILL.md:39"
+          },
+          {
+            "text": "Produces a *_标记重复.docx with highlighted duplicate text",
+            "source": "explicit",
+            "evidence": "SKILL.md:44"
+          },
+          {
+            "text": "Produces a *_重复报告.txt detailed report",
+            "source": "explicit",
+            "evidence": "SKILL.md:46"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "CPU cost grows quadratically with the number of paragraphs due to difflib.SequenceMatcher",
+          "source": "explicit",
+          "evidence": "SKILL.md:74"
+        },
+        {
+          "text": "Fuzzy matching may underperform on Chinese paragraphs with mixed punctuation",
+          "source": "explicit",
+          "evidence": "SKILL.md:76"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "docx-image-duplicate-detection",
+      "name": "Image duplicate detection via MD5",
+      "description": "Detect duplicated images across two DOCX files by comparing MD5 hashes of image contents.",
+      "matched_terms": [
+        "图片查重",
+        "通过 MD5 哈希值比较图片",
+        "image MD5 hash comparison"
+      ],
+      "inputs": [
+        "docx"
+      ],
+      "outputs": [
+        "docx",
+        "txt"
+      ],
+      "actions": [
+        "READ",
+        "COMPARE",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Both inputs must be .docx files (not legacy .doc)",
+          "source": "explicit",
+          "evidence": "SKILL.md:72"
+        },
+        {
+          "text": "Invoked with --mode image or --mode all",
+          "source": "explicit",
+          "evidence": "SKILL.md:55"
+        },
+        {
+          "text": "--file1 and --file2 paths are required",
+          "source": "explicit",
+          "evidence": "SKILL.md:52"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Two images are considered duplicates iff their MD5 hashes match (100% threshold)",
+            "source": "explicit",
+            "evidence": "SKILL.md:40"
+          },
+          {
+            "text": "Produces a *_标记图片重复.docx annotating duplicate images in the original document",
+            "source": "explicit",
+            "evidence": "SKILL.md:45"
+          },
+          {
+            "text": "Produces a *_重复报告.txt detailed report",
+            "source": "explicit",
+            "evidence": "SKILL.md:46"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "Detection is content-based (MD5), so the same image stored under different filenames is still flagged as duplicate",
+          "source": "explicit",
+          "evidence": "SKILL.md:73"
+        }
+      ],
+      "level": "fine"
+    }
+  ],
+  "extractor_meta": {
+    "schema_version": "skill-extractor-v1",
+    "backend": "anthropic",
+    "model": "glm-5.1",
+    "usage_tokens": 6751
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "schema_version": "matrix.v1",
+  "batch_dir": "/tmp/baseline_batch_v2",
+  "skills": [
+    "without-skill"
+  ],
+  "capabilities": [
+    "cap-read-docx",
+    "cap-read-html",
+    "cap-read-image",
+    "cap-read-json",
+    "cap-read-markdown",
+    "cap-read-odt",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-rtf",
+    "cap-read-xlsx",
+    "cap-transform-tabular-to-json",
+    "cap-write-json",
+    "cap-write-markdown",
+    "cap-write-pdf",
+    "cap-write-xlsx"
+  ],
+  "cells": {
+    "without-skill": {
+      "cap-read-docx": {
+        "task_id": "cap-read-docx",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 44.551,
+        "agent_tokens": 469,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-docx-1781490809835667437"
+      },
+      "cap-read-html": {
+        "task_id": "cap-read-html",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 43.471,
+        "agent_tokens": 593,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-html-1781490854719380824"
+      },
+      "cap-read-image": {
+        "task_id": "cap-read-image",
+        "reward": 0.0,
+        "pass_rate": 0.0,
+        "image_build_ok": true,
+        "agent_ok": false,
+        "verifier_ok": false,
+        "agent_seconds": 318.781,
+        "agent_tokens": 0,
+        "failure": "AgentTimeoutError",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-image-1781490898642360306"
+      },
+      "cap-read-json": {
+        "task_id": "cap-read-json",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 24.75,
+        "agent_tokens": 110,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-json-1781491217973695543"
+      },
+      "cap-read-markdown": {
+        "task_id": "cap-read-markdown",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 30.181,
+        "agent_tokens": 344,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-markdown-1781491243129955879"
+      },
+      "cap-read-odt": {
+        "task_id": "cap-read-odt",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 36.325,
+        "agent_tokens": 354,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-odt-1781491273650421135"
+      },
+      "cap-read-pdf": {
+        "task_id": "cap-read-pdf",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 63.507,
+        "agent_tokens": 751,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-pdf-1781491310408984506"
+      },
+      "cap-read-pptx": {
+        "task_id": "cap-read-pptx",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 45.396,
+        "agent_tokens": 657,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-pptx-1781491374304091396"
+      },
+      "cap-read-rtf": {
+        "task_id": "cap-read-rtf",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 58.781,
+        "agent_tokens": 1439,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-rtf-1781491420065255764"
+      },
+      "cap-read-xlsx": {
+        "task_id": "cap-read-xlsx",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 61.814,
+        "agent_tokens": 783,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-read-xlsx-1781491479152417123"
+      },
+      "cap-transform-tabular-to-json": {
+        "task_id": "cap-transform-tabular-to-json",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 23.912,
+        "agent_tokens": 127,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-transform-tabular-to-json-1781491541306609916"
+      },
+      "cap-write-json": {
+        "task_id": "cap-write-json",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 28.877,
+        "agent_tokens": 126,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-write-json-1781491565620917200"
+      },
+      "cap-write-markdown": {
+        "task_id": "cap-write-markdown",
+        "reward": 1.0,
+        "pass_rate": 1.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": true,
+        "agent_seconds": 34.421,
+        "agent_tokens": 356,
+        "failure": "",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-write-markdown-1781491594921698921"
+      },
+      "cap-write-pdf": {
+        "task_id": "cap-write-pdf",
+        "reward": 0.0,
+        "pass_rate": 0.0,
+        "image_build_ok": true,
+        "agent_ok": false,
+        "verifier_ok": false,
+        "agent_seconds": 318.959,
+        "agent_tokens": 0,
+        "failure": "AgentTimeoutError",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-write-pdf-1781491629710775480"
+      },
+      "cap-write-xlsx": {
+        "task_id": "cap-write-xlsx",
+        "reward": 0.0,
+        "pass_rate": 0.0,
+        "image_build_ok": true,
+        "agent_ok": true,
+        "verifier_ok": false,
+        "agent_seconds": 66.359,
+        "agent_tokens": 1154,
+        "failure": "1/1 discriminator classes failed: TestOutputs",
+        "job_dir": "/tmp/baseline_run_work/_jobs/without-skill-cap-write-xlsx-1781491949083871891"
+      }
+    }
+  },
+  "started_at": 1781490809.1304433,
+  "finished_at": 1781492015.443865,
+  "elapsed_sec": 1206.31
+}

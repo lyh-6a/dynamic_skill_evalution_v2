@@ -1,0 +1,11 @@
+{
+  "title": "Sample Page",
+  "paragraphs": [
+    "Welcome to the test page.",
+    "This paragraph contains important content.",
+    "The quick brown fox jumps over the lazy dog."
+  ],
+  "noise_script": "var x = 42; alert('should not appear');",
+  "noise_style": "body { color: red; }",
+  "expected_body_text": "Welcome to the test page. This paragraph contains important content. The quick brown fox jumps over the lazy dog."
+}

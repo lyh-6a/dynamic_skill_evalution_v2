@@ -1,0 +1,1 @@
+Read the RTF file at /root/input.rtf and extract its plain text content. Write a JSON object to /root/result.json with a single key 'text' whose value is the extracted plain text. Preserve line breaks between paragraphs as '\n'. Do not include any RTF control words or braces in the output.

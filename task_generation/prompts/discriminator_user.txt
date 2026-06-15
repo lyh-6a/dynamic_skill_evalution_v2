@@ -1,0 +1,82 @@
+你正在为一组 skill 做**跨能力差异分析**，目标是把"在 user query 划定的范围内，
+这些 skill 彼此能力上**真的不一样**的地方"梳理出来，输出结构化清单。
+
+我**不要**你出题。只要差异矩阵。
+
+============================================================
+输入信号（每个 skill 的 capability_candidates 里都带）
+============================================================
+
+  - variation_axes        —— 这个能力支持/不支持哪些参数维度（语言、格式、规模…）
+  - preconditions         —— 对输入的硬性假设（"必须是文本型 PDF"、"≤10MB"…）
+  - success_criteria      —— 这个 skill **认为**自己怎样算成功（保留格式？保留表格？语义一致？）
+  - common_failure_modes  —— 这个 skill **自己承认**容易翻车的场景
+  - inputs / outputs / description / actions —— 兜底背景
+
+差异点应当来自上面这些字段的对比，**不是凭你对工具市场的常识**。
+
+============================================================
+你要找的差异类型（按价值由高到低）
+============================================================
+
+1. **能力覆盖差异** —— skill A 声称能做某变体（OCR / 表格 / 加密 / 跨页），skill B 不提
+2. **质量目标差异** —— success_criteria 对同一输入要求不同（A 要保格式，B 只要语义）
+3. **失败模式差异** —— common_failure_modes 一方点名某场景翻车，另一方不提
+4. **前置条件差异** —— preconditions 不同（A 要文本型 PDF，B 接受任意 PDF）
+
+如果发现两个 skill 在某个轴上**完全一致**，不要凑数 —— 那条不是差异。
+如果整组 skill 在 query 范围内**没有任何明显差异**，输出空列表 `{"discriminators": []}`。
+
+============================================================
+输出格式（只输出 JSON，禁止围栏与说明文字）
+============================================================
+
+{
+  "discriminators": [
+    {
+      "id": "scanned-pdf-ocr",              // kebab-case 唯一短 id
+      "axis": "input_modality",              // 维度类别（自由文本，但短）
+      "description": "输入是扫描件 / 图片型 PDF（无文本层）时谁能解析",
+      "skill_verdicts": {
+        "document-reader-1.0.0":            "PASS — read-pdf-text 的 variation_axes 含 'scanned' 值",
+        "document-format-converter-1.0.0":  "FAIL — preconditions 明确写要求 '文本型 PDF'",
+        "document-translate-0.1.0":         "PARTIAL — 能读，但翻译会改字符"
+      },
+      "test_handle": "断言生成的 docx 里包含扫描件原文若干已知短语；扫描件由 renderer 用 reportlab 画再用 Pillow 转图嵌入 PDF",
+      "rationale": "证据：document-reader 的 read-pdf-text.variation_axes=[scanned, native]; document-format-converter 的 batch-conversion.preconditions=['text-based PDF']"
+    }
+  ]
+}
+
+============================================================
+硬性规则
+============================================================
+
+- 每条 discriminator 至少覆盖 **≥2 个 skill** 的 verdict，且这些 verdict **不能全相同**。
+- `test_handle` 必须是**具体的、可程序化断言**的指标（"断言 docx 含字符串 X"、
+  "断言提取出的表格行数 = 3"），不能是 "整体质量好" 这种模糊判断。
+- `rationale` 必须引用具体字段名（"X.variation_axes"、"Y.success_criteria.semantic"），
+  让人能回到 skill_extractor 产物里核对。**没有证据的差异不要写**。
+- 数量：**不设硬性上限**。多少条由 skill 实际差异决定 —— 4~10 条都正常。
+  宁可漏也不要凑数；但**真实存在的差异不要因为已经写够几条就丢掉**。
+- **去重铁律**：同一根因不要拆成多条 discriminator。判定标准：
+    * 如果两条 discriminator 的 skill_verdicts **取值组合一样**（哪些 skill PASS / FAIL 完全一致），
+      它们多半是同一根因的不同切片 —— 合成一条，axis 起一个更上位的名字。
+    * 如果两条都来自同一个 success_criteria 字段（例如都来自 "保留格式" 这条），合成一条。
+    * 例：把 "保留 bold/italic" 和 "保留电邮正文风格" 合成 "format-preservation"；
+      不要写成两个独立 discriminator。
+- 差异轴**之间**应该是正交的（覆盖的 skill 子集或差异维度不同），不是同一根因换措辞。
+- 兜底检查：先把脑子里想到的轴都列出来，再做去重；不要边想边砍。
+- skill_verdicts 的 key 必须是输入里出现过的真实 skill_id，不许编造。
+- 只输出上面那个 JSON，没有别的。
+
+============================================================
+输入
+============================================================
+
+用户 query：
+$query
+
+skill_extractor 产物（每个 skill 的 scheduling + capability_candidates）：
+
+$skills_payload

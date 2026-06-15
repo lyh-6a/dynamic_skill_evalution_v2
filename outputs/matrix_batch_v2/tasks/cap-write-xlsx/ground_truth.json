@@ -1,0 +1,28 @@
+{
+  "sheet_name": "Sheet1",
+  "cells": [
+    [
+      "A1",
+      "Hello"
+    ],
+    [
+      "B1",
+      "World"
+    ],
+    [
+      "A2",
+      "Foo"
+    ],
+    [
+      "B2",
+      "Bar"
+    ]
+  ],
+  "translations": [
+    "你好",
+    "世界",
+    "富",
+    "酒吧"
+  ],
+  "output_xlsx": "/root/output.xlsx"
+}

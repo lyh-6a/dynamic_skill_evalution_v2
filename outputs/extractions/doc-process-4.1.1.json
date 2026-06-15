@@ -1,0 +1,2219 @@
+{
+  "schema_version": "skill-extractor-v1",
+  "skill_id": "doc-process-4.1.1",
+  "source_path": "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/SKILL.md",
+  "scheduling": {
+    "skill_name": "",
+    "skill_goal": "",
+    "tags": [],
+    "expected_inputs": [],
+    "expected_outputs": [],
+    "dependencies": []
+  },
+  "capability_candidates": [
+    {
+      "capability_id": "contract-type-identification",
+      "name": "Identify Contract Type",
+      "description": "Classify the contract into one of 15 contract types using key signal phrases.",
+      "matched_terms": [
+        "Identify Contract Type",
+        "Key Signal Phrases",
+        "SaaS / Software License",
+        "NDA / Confidentiality",
+        "Lease (Commercial)"
+      ],
+      "inputs": [
+        "contract document"
+      ],
+      "outputs": [
+        "contract type label"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "SELECT"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Full contract has been read including definitions, schedules, and boilerplate.",
+          "source": "explicit",
+          "evidence": "SKILL.md:10"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output names exactly one Contract Type from the 15-row taxonomy table.",
+            "source": "explicit",
+            "evidence": "SKILL.md:19"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "The chosen contract type is consistent with the signal phrases present in the contract.",
+            "source": "explicit",
+            "evidence": "SKILL.md:19"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "plain-language-summary",
+      "name": "Plain-Language TL;DR Summary",
+      "description": "Produce a 6–10 bullet plain-language summary covering parties, obligations, duration, payment, termination, restrictions, governing law, and top risks.",
+      "matched_terms": [
+        "Plain-Language Summary (TL;DR)",
+        "Write 6–10 bullets",
+        "Contract type and parties",
+        "Core obligation",
+        "Duration",
+        "Compensation / Payment",
+        "Termination rights",
+        "Key restrictions",
+        "Governing law & dispute resolution",
+        "Special risks summary"
+      ],
+      "inputs": [
+        "contract document"
+      ],
+      "outputs": [
+        "TL;DR bullet list"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "All pages have been read without skipping.",
+          "source": "explicit",
+          "evidence": "SKILL.md:10"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Summary contains between 6 and 10 bullets.",
+            "source": "explicit",
+            "evidence": "SKILL.md:41"
+          },
+          {
+            "text": "Bullets cover the 8 required topics (parties, core obligation, duration, payment, termination, restrictions, governing law, special risks).",
+            "source": "explicit",
+            "evidence": "SKILL.md:43"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Each bullet accurately reflects the corresponding clause of the contract in plain language.",
+            "source": "explicit",
+            "evidence": "SKILL.md:39"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "comprehensive-risk-scan",
+      "name": "Comprehensive Risk Scan (RED/YELLOW/GREEN)",
+      "description": "Scan the contract against 15 RED high-risk patterns, 12 YELLOW medium-risk patterns, and standard GREEN items, classifying findings by severity.",
+      "matched_terms": [
+        "Comprehensive Risk Scan",
+        "RED — High Risk",
+        "YELLOW — Medium Risk",
+        "GREEN — Notable but Standard",
+        "Unlimited liability",
+        "Auto-renewal with short window",
+        "Arbitration-only clause",
+        "Limitation of liability too low",
+        "Warranty disclaimer"
+      ],
+      "inputs": [
+        "contract document"
+      ],
+      "outputs": [
+        "risk findings classified RED/YELLOW/GREEN with clause and recommendation"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "COMPARE",
+        "VALIDATE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Definitions, schedules/annexures, and boilerplate sections have been read since risks often hide there.",
+          "source": "explicit",
+          "evidence": "SKILL.md:11"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Findings are categorized into RED, YELLOW, and GREEN sections.",
+            "source": "explicit",
+            "evidence": "SKILL.md:56"
+          },
+          {
+            "text": "Each RED/YELLOW finding includes Clause, Location, Issue, and Recommendation columns.",
+            "source": "explicit",
+            "evidence": "SKILL.md:192"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Each flagged item matches the definition of its severity tier per the risk patterns table.",
+            "source": "explicit",
+            "evidence": "SKILL.md:58"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Missing risks that hide in Schedules, Annexures, Exhibits, Appendices.",
+          "source": "explicit",
+          "evidence": "SKILL.md:12"
+        },
+        {
+          "text": "Missing boilerplate-located risks like jurisdiction, arbitration, liability caps.",
+          "source": "explicit",
+          "evidence": "SKILL.md:13"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "contract-type-specific-checks",
+      "name": "Contract-Type-Specific Checks",
+      "description": "Run additional checks tailored to the identified contract type (SaaS, Employment, Commercial Lease, Loan/Credit, NDA).",
+      "matched_terms": [
+        "Contract-Type-Specific Checks",
+        "SaaS / Software Agreements",
+        "Employment Agreements",
+        "Lease Agreements (Commercial)",
+        "Loan / Credit Agreements",
+        "NDAs",
+        "Data Processing Agreement (DPA)",
+        "Effective APR",
+        "Residuals clause"
+      ],
+      "inputs": [
+        "contract document",
+        "contract type"
+      ],
+      "outputs": [
+        "type-specific checklist results"
+      ],
+      "actions": [
+        "READ",
+        "VALIDATE",
+        "INFER"
+      ],
+      "variation_axes": [
+        {
+          "axis": "contract_type",
+          "values": [
+            "SaaS",
+            "Employment",
+            "Commercial Lease",
+            "Loan/Credit",
+            "NDA"
+          ],
+          "default": "SaaS"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Contract type has been identified.",
+          "source": "explicit",
+          "evidence": "SKILL.md:108"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Checklist items run match the identified contract type's section (e.g. SaaS checks include DPA, data portability, uptime SLA, subprocessors, breach notification).",
+            "source": "explicit",
+            "evidence": "SKILL.md:110"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Each check correctly reports whether the contract addresses the item and whether the term is acceptable.",
+            "source": "explicit",
+            "evidence": "SKILL.md:111"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "renewal-fee-trap-scan",
+      "name": "Renewal & Fee Trap Detection",
+      "description": "Identify the 10 renewal and fee trap patterns (auto-renewal, cancellation window, price increases, ETF, minimum commitment, overage, late penalty, etc.) with their impact.",
+      "matched_terms": [
+        "Renewal & Fee Traps",
+        "Auto-renewal",
+        "Short cancellation window",
+        "Annual price increase",
+        "Early termination fee (ETF)",
+        "Minimum commitment",
+        "Overage charges",
+        "Late payment penalty",
+        "Data export fee"
+      ],
+      "inputs": [
+        "contract document"
+      ],
+      "outputs": [
+        "renewal & fee traps table"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "VALIDATE"
+      ],
+      "variation_axes": [],
+      "preconditions": [],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is a table with columns Trap, Detail/What to Find, and Impact.",
+            "source": "explicit",
+            "evidence": "SKILL.md:155"
+          },
+          {
+            "text": "Each detected trap maps to one of the 10 listed trap categories.",
+            "source": "explicit",
+            "evidence": "SKILL.md:157"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Reported impact quantifies the trap (e.g., annualized cost, calendar date, ETF amount) where data permits.",
+            "source": "explicit",
+            "evidence": "SKILL.md:159"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "contract-analysis-report",
+      "name": "Assemble Contract Analysis Report",
+      "description": "Compose the final analysis output following the prescribed template: header, TL;DR, Risk Report, Renewal & Fee Traps, type-specific checks, and Risk Score.",
+      "matched_terms": [
+        "Output Format",
+        "Contract Analysis",
+        "TL;DR Summary",
+        "Risk Report",
+        "Renewal & Fee Traps",
+        "SaaS-Specific Checks",
+        "Risk Score"
+      ],
+      "inputs": [
+        "TL;DR bullets",
+        "risk findings",
+        "renewal/fee traps",
+        "type-specific checks"
+      ],
+      "outputs": [
+        "formatted contract analysis report"
+      ],
+      "actions": [
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "All upstream analyses (summary, risk scan, type-specific checks, renewal traps) have been completed.",
+          "source": "explicit",
+          "evidence": "SKILL.md:170"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Report includes header with Contract Type, Parties, and Pages Analyzed.",
+            "source": "explicit",
+            "evidence": "SKILL.md:173"
+          },
+          {
+            "text": "Report contains sections: TL;DR Summary, Risk Report (RED/YELLOW/GREEN), Renewal & Fee Traps, type-specific checks, Risk Score.",
+            "source": "explicit",
+            "evidence": "SKILL.md:178"
+          },
+          {
+            "text": "Risk Score table lists counts for RED flags, YELLOW flags, type-specific gaps, and a Recommendation row.",
+            "source": "explicit",
+            "evidence": "SKILL.md:237"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "suggested-clause-rewrites",
+      "name": "Suggested Clause Rewrites",
+      "description": "When asked, provide specific replacement language for RED clauses (e.g. indemnification, auto-renewal, unilateral changes).",
+      "matched_terms": [
+        "Suggested Clause Rewrites",
+        "specific replacement language for RED clauses",
+        "Indemnification — suggested rewrite",
+        "Auto-renewal — suggested rewrite",
+        "Unilateral changes — suggested rewrite"
+      ],
+      "inputs": [
+        "RED-flagged clauses"
+      ],
+      "outputs": [
+        "replacement clause text"
+      ],
+      "actions": [
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "clause_type",
+          "values": [
+            "indemnification",
+            "auto-renewal",
+            "unilateral-changes"
+          ],
+          "default": "indemnification"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "RED clauses have been identified by the risk scan.",
+          "source": "explicit",
+          "evidence": "SKILL.md:249"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Rewrite is provided as a quoted block of replacement contractual language.",
+            "source": "explicit",
+            "evidence": "SKILL.md:251"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Rewrite materially mitigates the identified risk (e.g., caps liability, extends notice, requires mutual consent).",
+            "source": "explicit",
+            "evidence": "SKILL.md:252"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "document-mode-classification",
+      "name": "Classify document to processing mode via signal map",
+      "description": "Read the first 1-2 pages of an uploaded document and apply the classification signal map to identify the document type and recommended processing mode.",
+      "matched_terms": [
+        "Classification Signal Map",
+        "Identity Documents",
+        "Financial Documents",
+        "Legal & Contractual Documents",
+        "Medical Documents",
+        "Professional Documents",
+        "Administrative / Government Forms",
+        "Meeting & Communication Documents",
+        "Data Documents",
+        "Multi-Language Documents"
+      ],
+      "inputs": [
+        "document",
+        "pdf",
+        "image"
+      ],
+      "outputs": [
+        "document-type",
+        "recommended-mode",
+        "reason"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "SELECT"
+      ],
+      "variation_axes": [
+        {
+          "axis": "document_category",
+          "values": [
+            "identity",
+            "financial",
+            "legal",
+            "medical",
+            "professional",
+            "form",
+            "meeting",
+            "data",
+            "multi-language"
+          ],
+          "default": "identity"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "User has consented to auto-classification before reading the document",
+          "source": "explicit",
+          "evidence": "SKILL.md:21"
+        },
+        {
+          "text": "Read only the first 1-2 pages (or full document if short)",
+          "source": "explicit",
+          "evidence": "SKILL.md:31"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output states the matched mode name from the signal map",
+            "source": "explicit",
+            "evidence": "SKILL.md:141"
+          },
+          {
+            "text": "Output includes the signals that led to the classification decision",
+            "source": "explicit",
+            "evidence": "SKILL.md:220"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Classification matches the dominant signals per the signal map (e.g., MRZ → Passport → ID & Passport Scanner)",
+            "source": "explicit",
+            "evidence": "SKILL.md:50"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Misclassifying a medical document as a form or receipt",
+          "source": "explicit",
+          "evidence": "SKILL.md:216"
+        },
+        {
+          "text": "Misrouting a document with both form structure and contract clauses (should go to Contract Analyzer)",
+          "source": "explicit",
+          "evidence": "SKILL.md:217"
+        },
+        {
+          "text": "Misrouting a document with both financial tables and medical results (should go to Medical Summarizer)",
+          "source": "explicit",
+          "evidence": "SKILL.md:218"
+        },
+        {
+          "text": "Treating a non-document image (selfie, landscape, website screenshot) as a document instead of flagging it",
+          "source": "explicit",
+          "evidence": "SKILL.md:219"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "classification-confidence-assessment",
+      "name": "Assess classification confidence and select output flow",
+      "description": "Assign a confidence level (High / Medium / Low / Multi-mode) to the classification based on signal strength and choose the corresponding response action (auto-proceed, ask confirmation, present options, or list multiple modes).",
+      "matched_terms": [
+        "Confidence Assessment",
+        "High (≥85%)",
+        "Medium (60–85%)",
+        "Low (<60%)",
+        "Multi-mode"
+      ],
+      "inputs": [
+        "classification-signals"
+      ],
+      "outputs": [
+        "confidence-level",
+        "action-decision"
+      ],
+      "actions": [
+        "INFER",
+        "SELECT"
+      ],
+      "variation_axes": [
+        {
+          "axis": "confidence_level",
+          "values": [
+            "high",
+            "medium",
+            "low",
+            "multi-mode"
+          ],
+          "default": "high"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "An initial classification has been produced from the signal map",
+          "source": "explicit",
+          "evidence": "SKILL.md:45"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "High confidence (≥85%) → proceed automatically and state classification at the start",
+            "source": "explicit",
+            "evidence": "SKILL.md:130"
+          },
+          {
+            "text": "Medium confidence (60–85%) → state classification with brief reasoning and ask for confirmation",
+            "source": "explicit",
+            "evidence": "SKILL.md:131"
+          },
+          {
+            "text": "Low confidence (<60%) → present top 2-3 options and ask user to choose",
+            "source": "explicit",
+            "evidence": "SKILL.md:132"
+          },
+          {
+            "text": "Multi-mode → list all applicable modes, recommend one, let user choose",
+            "source": "explicit",
+            "evidence": "SKILL.md:133"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "classification-output-formatting",
+      "name": "Render classification output in the confidence-appropriate template",
+      "description": "Produce the classification output using the prescribed template for High, Medium, Low, or Multi-mode confidence, including document type, mode name, reasoning, and any options offered to the user.",
+      "matched_terms": [
+        "Classification Output",
+        "High Confidence (auto-proceed)",
+        "Medium Confidence (ask confirmation)",
+        "Low Confidence (present options)",
+        "Ambiguous / Multi-Mode"
+      ],
+      "inputs": [
+        "classification",
+        "confidence-level"
+      ],
+      "outputs": [
+        "formatted-classification-message"
+      ],
+      "actions": [
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "confidence_level",
+          "values": [
+            "high",
+            "medium",
+            "low",
+            "multi-mode"
+          ],
+          "default": "high"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Classification and confidence have been determined",
+          "source": "explicit",
+          "evidence": "SKILL.md:137"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "High-confidence output includes 'Document classified as', confidence label, one-line reason, and 'Proceeding with [Mode Name]…'",
+            "source": "explicit",
+            "evidence": "SKILL.md:141"
+          },
+          {
+            "text": "Medium-confidence output includes document type, mode name, 2-line reason with specific signals, and asks for confirmation with alternative modes",
+            "source": "explicit",
+            "evidence": "SKILL.md:152"
+          },
+          {
+            "text": "Low-confidence output presents a table of mode options with 'Best For' descriptions",
+            "source": "explicit",
+            "evidence": "SKILL.md:166"
+          },
+          {
+            "text": "Multi-mode output lists a primary recommendation and also-possible modes with reasons",
+            "source": "explicit",
+            "evidence": "SKILL.md:179"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Stated reason cites the specific signals observed in the document",
+            "source": "explicit",
+            "evidence": "SKILL.md:220"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-show",
+      "name": "Load and display timeline",
+      "description": "Load the timeline file and display entries as a formatted table with date, mode, document, and summary columns; show an empty-state message when no entries exist.",
+      "matched_terms": [
+        "Load and Display the Timeline",
+        "timeline_manager.py show",
+        "Timeline Table",
+        "Empty State"
+      ],
+      "inputs": [
+        "timeline_file"
+      ],
+      "outputs": [
+        "timeline_table"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Timeline file at ~/.doc-process-timeline.json may or may not exist",
+          "source": "explicit",
+          "evidence": "SKILL.md:4"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output table contains columns: #, Date & Time, Mode, Document, Summary",
+            "source": "explicit",
+            "evidence": "SKILL.md:24"
+          },
+          {
+            "text": "When no entries exist, display the empty-state message stating '0 documents logged'",
+            "source": "explicit",
+            "evidence": "SKILL.md:31"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-stats",
+      "name": "Statistics dashboard",
+      "description": "Produce a usage statistics dashboard summarizing total documents, most/least used mode, first and most recent entry, and per-mode usage breakdown.",
+      "matched_terms": [
+        "Statistics Dashboard (3+ entries)",
+        "timeline_manager.py stats",
+        "Usage by Mode"
+      ],
+      "inputs": [
+        "timeline_file"
+      ],
+      "outputs": [
+        "statistics_dashboard"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Timeline file should have 3+ entries",
+          "source": "explicit",
+          "evidence": "SKILL.md:35"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output contains metrics: Total Documents Logged, Most Used Mode, Least Used Mode, First Entry, Most Recent Entry",
+            "source": "explicit",
+            "evidence": "SKILL.md:43"
+          },
+          {
+            "text": "Output contains Usage by Mode table with Mode, Count, % of Total, Last Used columns",
+            "source": "explicit",
+            "evidence": "SKILL.md:50"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-filter",
+      "name": "Filtered views",
+      "description": "Display the timeline filtered by mode/type, presented in the same table format with a count of matched vs total entries.",
+      "matched_terms": [
+        "Filtered Views",
+        "show --type",
+        "Showing [N] of [Total] entries matching"
+      ],
+      "inputs": [
+        "timeline_file",
+        "filter_type"
+      ],
+      "outputs": [
+        "filtered_timeline_table"
+      ],
+      "actions": [
+        "READ",
+        "SELECT",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "filter_type",
+          "values": [
+            "Receipt Scanner",
+            "Contract Analyzer",
+            "Bank Statement Analyzer",
+            "Resume Parser",
+            "ID Scanner",
+            "Medical Summarizer",
+            "Legal Redactor",
+            "Meeting Minutes",
+            "Table Extractor",
+            "Document Translator",
+            "Form Autofill"
+          ],
+          "default": "Receipt Scanner"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Invoked with --type \"<Mode Name>\" argument",
+          "source": "explicit",
+          "evidence": "SKILL.md:59"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Filtered results presented in same table format as full timeline",
+            "source": "explicit",
+            "evidence": "SKILL.md:62"
+          },
+          {
+            "text": "Header line states 'Showing [N] of [Total] entries matching: [filter description]'",
+            "source": "explicit",
+            "evidence": "SKILL.md:63"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-save-markdown",
+      "name": "Save timeline as Markdown report",
+      "description": "Export the timeline to a formatted Markdown report at ~/Documents/doc-process-timeline.md containing entries and a usage summary, with no document content included.",
+      "matched_terms": [
+        "Save to Documents Folder",
+        "formatted Markdown report",
+        "timeline_manager.py save --output",
+        "doc-process-timeline.md"
+      ],
+      "inputs": [
+        "timeline_file"
+      ],
+      "outputs": [
+        "markdown_report"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "User has confirmed yes to saving prompt",
+          "source": "explicit",
+          "evidence": "SKILL.md:71"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Markdown file written to ~/Documents/doc-process-timeline.md",
+            "source": "explicit",
+            "evidence": "SKILL.md:76"
+          },
+          {
+            "text": "Report contains the N logged entries and a usage summary",
+            "source": "explicit",
+            "evidence": "SKILL.md:72"
+          },
+          {
+            "text": "Report contains no document content — only type, filename, and one-line summaries",
+            "source": "explicit",
+            "evidence": "SKILL.md:72"
+          },
+          {
+            "text": "Confirmation message 'Saved to ~/Documents/doc-process-timeline.md — [N] entries.' is emitted",
+            "source": "explicit",
+            "evidence": "SKILL.md:79"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-delete-entry",
+      "name": "Delete a specific entry",
+      "description": "Remove one timeline entry by its id after showing it and obtaining confirmation.",
+      "matched_terms": [
+        "Delete a specific entry",
+        "timeline_manager.py delete --id"
+      ],
+      "inputs": [
+        "entry_id"
+      ],
+      "outputs": [
+        "updated_timeline_file"
+      ],
+      "actions": [
+        "READ",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Entry must be shown to the user and confirmation obtained before deletion",
+          "source": "explicit",
+          "evidence": "SKILL.md:86"
+        },
+        {
+          "text": "Invoked with --id [entry_id]",
+          "source": "explicit",
+          "evidence": "SKILL.md:88"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Targeted entry removed from ~/.doc-process-timeline.json",
+            "source": "explicit",
+            "evidence": "SKILL.md:159"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-clear-all",
+      "name": "Clear all entries",
+      "description": "Permanently delete all timeline entries from ~/.doc-process-timeline.json after warning the user.",
+      "matched_terms": [
+        "Clear all entries",
+        "timeline_manager.py clear --yes",
+        "permanently delete all [N] timeline entries"
+      ],
+      "inputs": [
+        "timeline_file"
+      ],
+      "outputs": [
+        "empty_timeline_file"
+      ],
+      "actions": [
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "User has been warned and confirmed",
+          "source": "explicit",
+          "evidence": "SKILL.md:92"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "All entries removed from ~/.doc-process-timeline.json",
+            "source": "explicit",
+            "evidence": "SKILL.md:159"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-export-json",
+      "name": "Export timeline to JSON",
+      "description": "Export the timeline to a JSON file at a specified output path.",
+      "matched_terms": [
+        "Export to JSON",
+        "timeline_manager.py export --output"
+      ],
+      "inputs": [
+        "timeline_file"
+      ],
+      "outputs": [
+        "json_export"
+      ],
+      "actions": [
+        "READ",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "JSON file written to specified output path (e.g., ~/Documents/timeline.json)",
+            "source": "explicit",
+            "evidence": "SKILL.md:99"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "timeline-add-entry",
+      "name": "Log entry after consent",
+      "description": "Append a new entry to the timeline with type, source, and PII-free one-line summary, only after user has consented; announce 'Logged to your timeline.' after each task.",
+      "matched_terms": [
+        "Logging After Consent",
+        "timeline_manager.py add",
+        "--type",
+        "--source",
+        "--summary",
+        "Logged to your timeline.",
+        "Summary PII rules (enforced)"
+      ],
+      "inputs": [
+        "mode_name",
+        "source_filename",
+        "summary_text"
+      ],
+      "outputs": [
+        "updated_timeline_file",
+        "confirmation_line"
+      ],
+      "actions": [
+        "VALIDATE",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "mode_type",
+          "values": [
+            "Receipt Scanner",
+            "Contract Analyzer",
+            "Bank Statement Analyzer",
+            "Resume Parser",
+            "ID Scanner",
+            "Medical Summarizer",
+            "Legal Redactor",
+            "Meeting Minutes",
+            "Table Extractor",
+            "Document Translator",
+            "Form Autofill"
+          ],
+          "default": "Receipt Scanner"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "User must have explicitly said yes to the consent prompt before any add is executed",
+          "source": "explicit",
+          "evidence": "SKILL.md:10"
+        },
+        {
+          "text": "If user said no or did not answer, do not run timeline_manager.py add",
+          "source": "explicit",
+          "evidence": "SKILL.md:10"
+        },
+        {
+          "text": "Summary must not contain names, ID numbers, dates of birth, addresses, account numbers, medical values, or other identifying data",
+          "source": "explicit",
+          "evidence": "SKILL.md:118"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "New entry written to ~/.doc-process-timeline.json with id, timestamp, type, source, summary fields",
+            "source": "explicit",
+            "evidence": "SKILL.md:142"
+          },
+          {
+            "text": "After each task, the line 'Logged to your timeline.' is stated",
+            "source": "explicit",
+            "evidence": "SKILL.md:108"
+          },
+          {
+            "text": "Summary contains only category-level descriptions, no PII",
+            "source": "explicit",
+            "evidence": "SKILL.md:118"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Summary uses category-level descriptions consistent with the Acceptable Summary examples for the given Mode",
+            "source": "explicit",
+            "evidence": "SKILL.md:120"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Including PII (names, ID numbers, addresses, account numbers, medical values) in the --summary value",
+          "source": "explicit",
+          "evidence": "SKILL.md:118"
+        },
+        {
+          "text": "Running add without obtaining explicit user consent",
+          "source": "explicit",
+          "evidence": "SKILL.md:10"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "form-type-classification",
+      "name": "Classify Form Type",
+      "description": "Classify the uploaded form into a known category (visa, tax, insurance, rental, employment, medical, bank, education, legal, business, event, or generic) based on signal keywords before extracting fields.",
+      "matched_terms": [
+        "Identify the Form Type",
+        "Classify the form before extracting fields",
+        "Classification Signals",
+        "Visa / Immigration",
+        "Government / Tax",
+        "Generic / Unknown"
+      ],
+      "inputs": [
+        "pdf",
+        "image",
+        "screenshot"
+      ],
+      "outputs": [
+        "form type label"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "SELECT"
+      ],
+      "variation_axes": [
+        {
+          "axis": "form_category",
+          "values": [
+            "visa",
+            "tax",
+            "insurance",
+            "rental",
+            "employment",
+            "medical",
+            "bank",
+            "education",
+            "legal",
+            "business",
+            "event",
+            "generic"
+          ],
+          "default": "generic"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "A form document (PDF, image, screenshot, or printed scan) is provided.",
+          "source": "explicit",
+          "evidence": "SKILL.md:4"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output contains a 'Form Type' label.",
+            "source": "explicit",
+            "evidence": "SKILL.md:167"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Assigned form type is consistent with the classification signals present in the document.",
+            "source": "explicit",
+            "evidence": "SKILL.md:10"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Unknown/ambiguous form forces fall-back to Generic with best-effort matching.",
+          "source": "explicit",
+          "evidence": "SKILL.md:25"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "form-field-extraction",
+      "name": "Extract All Form Fields",
+      "description": "Read the document visually or structurally and enumerate every fillable field with label, number, type, required/optional flag, format notes, section, and conditional dependencies.",
+      "matched_terms": [
+        "Extract All Fields",
+        "Field label",
+        "Field number",
+        "Field type",
+        "Required vs. optional",
+        "Character limits or format notes",
+        "Section / group",
+        "Conditional fields",
+        "multi-page forms, process page by page and number fields sequentially"
+      ],
+      "inputs": [
+        "pdf",
+        "image",
+        "screenshot"
+      ],
+      "outputs": [
+        "field list with metadata"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "extraction_source",
+          "values": [
+            "visual_image",
+            "pdf_text_layer"
+          ],
+          "default": "visual_image"
+        },
+        {
+          "axis": "page_count",
+          "values": [
+            "single_page",
+            "multi_page"
+          ],
+          "default": "single_page"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Document is readable visually (image/screenshot) or structurally (PDF text layer).",
+          "source": "explicit",
+          "evidence": "SKILL.md:31"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Each extracted field includes label, type, and required/optional status.",
+            "source": "explicit",
+            "evidence": "SKILL.md:33"
+          },
+          {
+            "text": "Fields are grouped by section as printed on the form.",
+            "source": "explicit",
+            "evidence": "SKILL.md:38"
+          },
+          {
+            "text": "For multi-page forms, fields are numbered sequentially across pages.",
+            "source": "explicit",
+            "evidence": "SKILL.md:41"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Field labels match exactly as printed on the form.",
+            "source": "explicit",
+            "evidence": "SKILL.md:33"
+          },
+          {
+            "text": "Conditional fields are flagged with their triggering condition.",
+            "source": "explicit",
+            "evidence": "SKILL.md:39"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "user-data-collection-prompt",
+      "name": "Request Required User Data",
+      "description": "Present a data-handling notice and then request only the user data needed by the fields actually present on the form, using either single-prompt or field-by-field collection.",
+      "matched_terms": [
+        "Request User Data",
+        "Data handling notice",
+        "Single-prompt collection",
+        "field-by-field collection",
+        "Minimum-necessary principle",
+        "Only request fields that actually appear on the form"
+      ],
+      "inputs": [
+        "extracted field list"
+      ],
+      "outputs": [
+        "user-data request prompt"
+      ],
+      "actions": [
+        "SELECT",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "collection_mode",
+          "values": [
+            "single_prompt",
+            "field_by_field"
+          ],
+          "default": "single_prompt"
+        },
+        {
+          "axis": "form_category",
+          "values": [
+            "generic",
+            "visa",
+            "medical",
+            "tax"
+          ],
+          "default": "generic"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Fields have already been extracted so that requests can be scoped to the form's actual fields.",
+          "source": "explicit",
+          "evidence": "SKILL.md:63"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Data-handling notice is shown before requesting any personal data.",
+            "source": "explicit",
+            "evidence": "SKILL.md:47"
+          },
+          {
+            "text": "Prompt only requests fields that actually appear on the form.",
+            "source": "explicit",
+            "evidence": "SKILL.md:78"
+          },
+          {
+            "text": "Category-specific additions (visa/medical/tax) are included only if such fields exist on the form.",
+            "source": "explicit",
+            "evidence": "SKILL.md:68"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Notice states data is used only in this session, not stored, and that skipped fields will be marked [MISSING].",
+            "source": "explicit",
+            "evidence": "SKILL.md:52"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Front-loading a large list of sensitive field requests when user chose field-by-field mode.",
+          "source": "explicit",
+          "evidence": "SKILL.md:59"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "field-alias-matching",
+      "name": "Match User Data to Form Fields via Aliases",
+      "description": "Map user-provided data fields to form labels using the standard and travel/visa alias tables, choosing the most specific match when multiple aliases match.",
+      "matched_terms": [
+        "Match and Fill",
+        "alias table",
+        "When multiple aliases match one field, use the most specific match",
+        "Standard Aliases",
+        "Travel & Visa-Specific Aliases"
+      ],
+      "inputs": [
+        "extracted field list",
+        "user profile data"
+      ],
+      "outputs": [
+        "field-to-value mapping"
+      ],
+      "actions": [
+        "COMPARE",
+        "SELECT",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "alias_table",
+          "values": [
+            "standard",
+            "travel_visa"
+          ],
+          "default": "standard"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "User has provided data values for the requested fields.",
+          "source": "explicit",
+          "evidence": "SKILL.md:84"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Each filled field corresponds to a data field defined in the alias tables.",
+            "source": "explicit",
+            "evidence": "SKILL.md:88"
+          },
+          {
+            "text": "When multiple aliases match one field, the most specific match is chosen.",
+            "source": "explicit",
+            "evidence": "SKILL.md:84"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Calculated fields (e.g., Age from DOB, Duration from arrival/departure) are derived correctly.",
+            "source": "explicit",
+            "evidence": "SKILL.md:95"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Inventing or guessing field values instead of marking them [MISSING].",
+          "source": "explicit",
+          "evidence": "SKILL.md:274"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "field-value-validation",
+      "name": "Validate Filled Values",
+      "description": "Apply validation rules on filled values: date format, passport number shape, phone country code, email format, postal code, future-date logic, passport 6-month validity, and DOB/age consistency.",
+      "matched_terms": [
+        "Validation Rules",
+        "Date fields",
+        "Passport number",
+        "Phone numbers",
+        "Email",
+        "Postal codes",
+        "Future dates",
+        "Passport validity",
+        "Age consistency"
+      ],
+      "inputs": [
+        "field-to-value mapping"
+      ],
+      "outputs": [
+        "validation status per field",
+        "warnings"
+      ],
+      "actions": [
+        "VALIDATE",
+        "COMPARE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "date_format",
+          "values": [
+            "DD/MM/YYYY",
+            "MM/DD/YYYY",
+            "YYYY-MM-DD"
+          ],
+          "default": "DD/MM/YYYY"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Fields have been filled with candidate values before validation.",
+          "source": "explicit",
+          "evidence": "SKILL.md:148"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Email values contain '@' and a domain.",
+            "source": "explicit",
+            "evidence": "SKILL.md:155"
+          },
+          {
+            "text": "Passport numbers are non-empty and typically 6–9 alphanumeric characters.",
+            "source": "explicit",
+            "evidence": "SKILL.md:153"
+          },
+          {
+            "text": "Arrival/departure dates are in the future.",
+            "source": "explicit",
+            "evidence": "SKILL.md:157"
+          },
+          {
+            "text": "Warning emitted if passport expires within 6 months of travel date.",
+            "source": "explicit",
+            "evidence": "SKILL.md:158"
+          },
+          {
+            "text": "DOB-derived age matches any explicit Age field.",
+            "source": "explicit",
+            "evidence": "SKILL.md:159"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Date values conform to the form-required format.",
+            "source": "explicit",
+            "evidence": "SKILL.md:152"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "fill-table-output",
+      "name": "Produce Structured Fill Table",
+      "description": "Render the filled form as a sectioned markdown table with field number, label, value, type, and status, plus summary counts and dedicated sections for missing fields, action-required items, warnings, and notes.",
+      "matched_terms": [
+        "Output Format",
+        "Form Fill",
+        "Total Fields",
+        "Filled",
+        "Missing",
+        "Action Required",
+        "Missing Fields",
+        "Warnings",
+        "Notes"
+      ],
+      "inputs": [
+        "validated field-to-value mapping"
+      ],
+      "outputs": [
+        "sectioned markdown fill table"
+      ],
+      "actions": [
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Fields have been matched, filled, and validated.",
+          "source": "explicit",
+          "evidence": "SKILL.md:148"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output includes a header line with Total Fields, Filled, Missing, and Action Required counts.",
+            "source": "explicit",
+            "evidence": "SKILL.md:168"
+          },
+          {
+            "text": "Fields are grouped under Section headings matching the form.",
+            "source": "explicit",
+            "evidence": "SKILL.md:170"
+          },
+          {
+            "text": "Each row contains #, Field, Value, Type, and Status columns.",
+            "source": "explicit",
+            "evidence": "SKILL.md:171"
+          },
+          {
+            "text": "Unknown values are rendered as [MISSING — please provide].",
+            "source": "explicit",
+            "evidence": "SKILL.md:274"
+          },
+          {
+            "text": "Signature and photo fields are flagged as action-required.",
+            "source": "explicit",
+            "evidence": "SKILL.md:278"
+          },
+          {
+            "text": "Passport/ID numbers are masked (middle digits) when displayed for confirmation.",
+            "source": "explicit",
+            "evidence": "SKILL.md:275"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Output respects form-specified formats such as uppercase, date format, and length limits.",
+            "source": "explicit",
+            "evidence": "SKILL.md:276"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Including conditional fields when their triggering condition is not met.",
+          "source": "explicit",
+          "evidence": "SKILL.md:277"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "export-and-checklist",
+      "name": "Offer Export Options and Supporting-Document Checklist",
+      "description": "After presenting the filled table, offer guided completion, JSON export, plain-text export, a form-type-specific supporting-document checklist, and form-specific guidance.",
+      "matched_terms": [
+        "Export Options",
+        "Guided completion",
+        "JSON export",
+        "Plain text export",
+        "Document checklist",
+        "Form-specific guidance",
+        "Supporting Document Checklists by Form Type"
+      ],
+      "inputs": [
+        "completed fill table",
+        "form type"
+      ],
+      "outputs": [
+        "json export",
+        "plain-text export",
+        "supporting-document checklist",
+        "form-specific guidance"
+      ],
+      "actions": [
+        "TRANSFORM",
+        "WRITE",
+        "SELECT"
+      ],
+      "variation_axes": [
+        {
+          "axis": "export_format",
+          "values": [
+            "json",
+            "plain_text"
+          ],
+          "default": "json"
+        },
+        {
+          "axis": "checklist_category",
+          "values": [
+            "visa",
+            "tax",
+            "rental",
+            "medical"
+          ],
+          "default": "visa"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Filled table has been presented to the user.",
+          "source": "explicit",
+          "evidence": "SKILL.md:232"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "JSON export contains all field/value pairs as a JSON object.",
+            "source": "explicit",
+            "evidence": "SKILL.md:235"
+          },
+          {
+            "text": "Plain-text export uses Key: Value format.",
+            "source": "explicit",
+            "evidence": "SKILL.md:236"
+          },
+          {
+            "text": "Supporting-document checklist matches the form type's required documents.",
+            "source": "explicit",
+            "evidence": "SKILL.md:240"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Form-specific guidance is relevant to the country/authority (e.g., Schengen ≥ €100/day).",
+            "source": "explicit",
+            "evidence": "SKILL.md:238"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "identity-document-type-detection",
+      "name": "Identity document type detection",
+      "description": "Classify the identity document into one of the recognized types (passport, national ID, visa, residence permit, driver's license, birth certificate, voter ID, military ID) using visual signals and MRZ format.",
+      "matched_terms": [
+        "Document Type Detection",
+        "Primary Visual Signals",
+        "MRZ Format",
+        "Passport (biographic page)",
+        "National ID card",
+        "Visa sticker",
+        "Residence / work permit",
+        "Driver's license",
+        "Birth certificate",
+        "Voter ID",
+        "Military ID"
+      ],
+      "inputs": [
+        "image"
+      ],
+      "outputs": [
+        "document-type-label"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "SELECT"
+      ],
+      "variation_axes": [
+        {
+          "axis": "document_type",
+          "values": [
+            "passport",
+            "national-id",
+            "visa",
+            "residence-permit",
+            "drivers-license",
+            "birth-certificate",
+            "voter-id",
+            "military-id"
+          ],
+          "default": "passport"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Input is an image of an identity document showing visual signals or MRZ.",
+          "source": "explicit",
+          "evidence": "SKILL.md:10"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output identifies the document type from the enumerated set in the detection table.",
+            "source": "explicit",
+            "evidence": "SKILL.md:12"
+          },
+          {
+            "text": "When MRZ is present, the reported MRZ format (TD1/TD2/TD3) matches the table for that document type.",
+            "source": "explicit",
+            "evidence": "SKILL.md:12"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "passport-field-extraction",
+      "name": "Passport biographic field extraction",
+      "description": "Extract the standard ICAO passport biographic fields (surname, given names, nationality, country code, DOB, sex, place of birth, dates, passport number, personal number, issuing authority, endorsements) from a passport biographic page.",
+      "matched_terms": [
+        "Passport — All Countries",
+        "Surname",
+        "Given names",
+        "Nationality",
+        "Country code",
+        "Date of birth",
+        "Sex",
+        "Place of birth",
+        "Date of issue",
+        "Date of expiry",
+        "Passport number",
+        "Personal number",
+        "Issuing authority",
+        "Endorsements"
+      ],
+      "inputs": [
+        "image"
+      ],
+      "outputs": [
+        "passport-fields"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "INFER"
+      ],
+      "variation_axes": [
+        {
+          "axis": "issuing_country",
+          "values": [
+            "USA",
+            "GBR",
+            "SGP",
+            "AUS",
+            "IND",
+            "CHN",
+            "JPN"
+          ],
+          "default": "USA"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Document is recognized as a passport biographic page.",
+          "source": "explicit",
+          "evidence": "SKILL.md:12"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output includes the passport fields listed in the Passport extraction table (surname, given names, nationality, dates, passport number, etc.).",
+            "source": "explicit",
+            "evidence": "SKILL.md:29"
+          },
+          {
+            "text": "Nationality is reported as a 3-letter ICAO country code.",
+            "source": "explicit",
+            "evidence": "SKILL.md:31"
+          },
+          {
+            "text": "Passport number is masked, showing only last 3 characters as XXXXX{last3}.",
+            "source": "explicit",
+            "evidence": "SKILL.md:210"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Extracted values semantically match what is shown on the document image.",
+            "source": "explicit",
+            "evidence": "SKILL.md:154"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Personal number may be blank (filler `<`) and must not be hallucinated.",
+          "source": "explicit",
+          "evidence": "SKILL.md:39"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "national-id-field-extraction",
+      "name": "Country-specific national ID field extraction",
+      "description": "Extract national-ID fields per country convention (EU, India Aadhaar, Singapore NRIC, USA, UK, China, Japan, South Korea, UAE, Saudi Arabia, Brazil).",
+      "matched_terms": [
+        "National ID Cards by Region",
+        "Aadhaar",
+        "NRIC",
+        "Resident ID",
+        "My Number",
+        "Emirates ID",
+        "Iqama",
+        "CPF",
+        "RG"
+      ],
+      "inputs": [
+        "image"
+      ],
+      "outputs": [
+        "national-id-fields"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "INFER"
+      ],
+      "variation_axes": [
+        {
+          "axis": "country",
+          "values": [
+            "EU",
+            "IN",
+            "SG",
+            "US",
+            "UK",
+            "CN",
+            "JP",
+            "KR",
+            "AE",
+            "SA",
+            "BR"
+          ],
+          "default": "EU"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Document is recognized as a national ID card for one of the supported countries.",
+          "source": "explicit",
+          "evidence": "SKILL.md:43"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output contains the country-specific field set described for the detected country (e.g., 12-digit Aadhaar for India, S/T/F/G/M prefix + 7 digits + letter for Singapore, 18-digit ID for China).",
+            "source": "explicit",
+            "evidence": "SKILL.md:46"
+          },
+          {
+            "text": "ID number is masked, showing only last 3 characters as XXXXX{last3}.",
+            "source": "explicit",
+            "evidence": "SKILL.md:210"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "drivers-license-field-extraction",
+      "name": "Driver's license field extraction",
+      "description": "Extract driver's license fields including license number, DOB, address, vehicle classes, restrictions, endorsements, donor status, physical descriptors, and REAL ID / Enhanced ID markers.",
+      "matched_terms": [
+        "Driver's Licenses — Key Fields",
+        "License number",
+        "Vehicle classes",
+        "Restrictions",
+        "Endorsements",
+        "Donor status",
+        "Height / weight / eye color",
+        "REAL ID / Enhanced ID"
+      ],
+      "inputs": [
+        "image"
+      ],
+      "outputs": [
+        "drivers-license-fields"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "INFER"
+      ],
+      "variation_axes": [
+        {
+          "axis": "license_class_scheme",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Document is recognized as a driver's license.",
+          "source": "explicit",
+          "evidence": "SKILL.md:17"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output contains the driver's license key fields enumerated in the table (license number, DOB, issue/expiry, address, vehicle classes, restrictions, endorsements, etc.).",
+            "source": "explicit",
+            "evidence": "SKILL.md:59"
+          },
+          {
+            "text": "License number is masked, showing only last 3 characters as XXXXX{last3}.",
+            "source": "explicit",
+            "evidence": "SKILL.md:210"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "mrz-decoding",
+      "name": "MRZ decoding",
+      "description": "Decode TD1, TD2, and TD3 MRZ formats into structured fields (document type, country, document number, nationality, DOB, sex, expiry, personal number, name).",
+      "matched_terms": [
+        "MRZ Decoding (Full Specification)",
+        "TD3 (Passport) — 2 lines × 44 characters",
+        "TD1 (National ID) — 3 lines × 30 characters",
+        "Document number",
+        "Nationality",
+        "Date of birth (YYMMDD)",
+        "Expiry date (YYMMDD)",
+        "Personal number"
+      ],
+      "inputs": [
+        "mrz-text",
+        "image"
+      ],
+      "outputs": [
+        "decoded-mrz-fields"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "mrz_format",
+          "values": [
+            "TD1",
+            "TD2",
+            "TD3"
+          ],
+          "default": "TD3"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "MRZ is present and legible in the document.",
+          "source": "explicit",
+          "evidence": "SKILL.md:74"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Decoded fields appear in the positions defined by the selected MRZ format (e.g., TD3 line 2 doc number at positions 1–9, DOB at 14–19, expiry at 22–27).",
+            "source": "explicit",
+            "evidence": "SKILL.md:91"
+          },
+          {
+            "text": "Dates YYMMDD are expanded to a human-readable date in the decoded output.",
+            "source": "explicit",
+            "evidence": "SKILL.md:175"
+          },
+          {
+            "text": "Filler `<` characters in fields like personal number are reported as [Not present] rather than raw fillers.",
+            "source": "explicit",
+            "evidence": "SKILL.md:178"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "mrz-check-digit-validation",
+      "name": "MRZ check digit validation",
+      "description": "Compute and verify MRZ check digits using the 7-3-1 weighting algorithm for document number, DOB, expiry, personal number, and composite fields.",
+      "matched_terms": [
+        "Check Digit Algorithm",
+        "weighting pattern 7, 3, 1",
+        "modulo 10",
+        "Composite check digit",
+        "MRZ Integrity Report"
+      ],
+      "inputs": [
+        "mrz-text"
+      ],
+      "outputs": [
+        "check-digit-status-per-field"
+      ],
+      "actions": [
+        "VALIDATE",
+        "TRANSFORM",
+        "COMPARE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "MRZ has been decoded into fields with associated check digit positions.",
+          "source": "explicit",
+          "evidence": "SKILL.md:127"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "For each MRZ check-digit field (doc number, DOB, expiry, personal number, composite), the report shows raw MRZ, decoded value, check digit, and VALID/INVALID status.",
+            "source": "explicit",
+            "evidence": "SKILL.md:172"
+          },
+          {
+            "text": "Check digit is computed by assigning char values (0-9 face value, A-Z = 10-35, `<` = 0), applying weights 7,3,1 repeating, summing products, and taking modulo 10.",
+            "source": "explicit",
+            "evidence": "SKILL.md:130"
+          },
+          {
+            "text": "Composite check digit covers doc number + DOB + expiry + personal number.",
+            "source": "explicit",
+            "evidence": "SKILL.md:103"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "document-validity-assessment",
+      "name": "Document validity assessment",
+      "description": "Assess document validity: expiry status, six-month travel rule, MRZ integrity, document type recognition, and legibility.",
+      "matched_terms": [
+        "Validity Assessment",
+        "Document expired?",
+        "Valid for travel (6-month rule)?",
+        "MRZ integrity",
+        "Document type recognized",
+        "Legibility",
+        "Possible issues"
+      ],
+      "inputs": [
+        "decoded-mrz-fields",
+        "passport-fields"
+      ],
+      "outputs": [
+        "validity-report"
+      ],
+      "actions": [
+        "VALIDATE",
+        "COMPARE",
+        "INFER"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Document fields including expiry date have been extracted and MRZ check digits computed.",
+          "source": "explicit",
+          "evidence": "SKILL.md:181"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output includes the six validity rows: expired?, valid-for-travel 6-month rule, MRZ integrity, document type recognized, legibility, possible issues.",
+            "source": "explicit",
+            "evidence": "SKILL.md:182"
+          },
+          {
+            "text": "Expiry status is computed against the extracted Date of Expiry and reports remaining time.",
+            "source": "explicit",
+            "evidence": "SKILL.md:184"
+          },
+          {
+            "text": "MRZ integrity row reports pass/fail across all check digits.",
+            "source": "explicit",
+            "evidence": "SKILL.md:186"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "identity-data-privacy-redaction",
+      "name": "Identity data privacy redaction",
+      "description": "Apply privacy rules: mask document/ID/personal numbers to last 3 characters and append the required disclaimer; never store or transmit extracted data.",
+      "matched_terms": [
+        "Privacy Rules",
+        "Never echo full document numbers",
+        "XXXXX{last3}",
+        "Never log, store, or transmit",
+        "Add disclaimer"
+      ],
+      "inputs": [
+        "extracted-identity-fields"
+      ],
+      "outputs": [
+        "redacted-output-with-disclaimer"
+      ],
+      "actions": [
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Identity fields have been extracted prior to output formatting.",
+          "source": "explicit",
+          "evidence": "SKILL.md:209"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "All document numbers, ID numbers, and personal numbers in output are masked as XXXXX{last3}, showing only last 3 characters.",
+            "source": "explicit",
+            "evidence": "SKILL.md:210"
+          },
+          {
+            "text": "Output includes the required disclaimer text about personal-reference-only use and lack of authenticity verification.",
+            "source": "explicit",
+            "evidence": "SKILL.md:212"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "Echoing full document/ID/personal numbers instead of masking violates privacy rules.",
+          "source": "explicit",
+          "evidence": "SKILL.md:210"
+        },
+        {
+          "text": "Logging, storing, or transmitting extracted identity data violates privacy rules.",
+          "source": "explicit",
+          "evidence": "SKILL.md:211"
+        }
+      ],
+      "level": "fine"
+    }
+  ],
+  "extractor_meta": {
+    "schema_version": "skill-extractor-v1",
+    "backend": "anthropic",
+    "model": "glm-5.1",
+    "usage_tokens": 169958,
+    "hub_mode": true,
+    "hub_main_head_chars": 3967,
+    "hub_reference_files": [
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/bank-statement-analyzer.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/contract-analyzer.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/doc-scan.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/document-categorizer.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/document-timeline.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/document-translator.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/form-autofill.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/id-scanner.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/legal-redactor.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/medical-summarizer.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/meeting-minutes.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/receipt-scanner.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/resume-parser.md",
+      "/home/liuyuhan/dynamic_skill_evalution/doc_skills/doc-process-4.1.1/references/table-extractor.md"
+    ],
+    "hub_reference_usage_tokens": 161237
+  }
+}

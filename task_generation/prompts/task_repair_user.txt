@@ -1,0 +1,78 @@
+你刚才出的题在自验证阶段失败了。这是一道**已经存在的题**，你的任务是**只修复失败的那部分**，
+不要重新设计题面，不要换 ground_truth，不要换 discriminator。
+
+============================================================
+失败信息
+============================================================
+
+失败阶段：$failed_stage
+失败细节：$detail
+
+执行日志（stdout 在前 stderr 在后，已截断到尾部）：
+$logs
+
+============================================================
+常见修复模式（按阶段对应）
+============================================================
+
+**tests 阶段失败（pytest exited 5 = no tests ran）**：
+- 原因：你把测试写成了模块顶层的 `def test_xxx()` 但里面包含模块级 assert / 顶层执行代码，
+  或干脆没写以 `test_` 开头的函数。
+- 修复：所有断言**必须**放在以 `test_` 开头的函数体内，或包在 `class TestX:` 里的 `test_` 方法里。
+  不要在模块顶层执行业务逻辑（不要在文件顶层 open 文件、跑 assert、读 result.json）。
+  正确骨架：
+      import json, os
+      class TestOutputs:
+          def test_file_exists(self):
+              assert os.path.exists('/root/result.json')
+          def test_value(self):
+              d = json.load(open('/root/result.json'))
+              assert d['foo'] == 'bar'
+
+**tests 阶段失败（assertion 在 collection 阶段触发）**：
+- 你在模块顶层就调用了 `os.listdir(...)` 之类的代码，pytest 还没跑测试就崩了。
+- 修复：把所有这类调用挪进 test_ 函数体内。
+
+**tests 阶段失败（pytest exited 1 = 真实断言失败）**：
+- solution 的产物确实不满足 tests 的期望。
+- 修复：调整 solution_py 让它产出符合 tests 期望的值；或松动 tests 的浮点容差。
+  不要为了通过测试而把 tests 改弱（删断言、把数值改大）。
+
+**solution 阶段失败**：
+- 如果是 ModuleNotFoundError：换一个校验环境已有的库实现（pypdf/pdfplumber/pdfminer.six/
+  reportlab/python-docx/pytesseract/Pillow 这些都已预装）。
+- 如果是 regex / 解析逻辑错：修 solution_py，让它正确读出 ground_truth 期望的字段。
+
+**render 阶段失败**：
+- renderer_py 没把文件写出来，或写错了路径。
+- 修复：确认 renderer 用环境变量 OUTPUT_PATH 写文件，不要硬编码 /root/...。
+
+============================================================
+要修改的字段（只输出真正要改的字段，未变更字段不要重复发回）
+============================================================
+
+只输出 JSON，键名固定，不允许 markdown 围栏：
+
+{
+  "patch": {
+    "tests_py":      "...（如修改了就给完整新内容；没改就别给这个 key）",
+    "solution_py":   "...（同上）",
+    "assets": [                  // 仅在某个 asset 的 renderer_py 需要改时给；index 是 0-based
+      {"index": 0, "renderer_py": "..."}
+    ],
+    "tests": [                   // 仅在 combined-task 模式（task.tests 非空）时使用：
+      // 通过 discriminator_id 或 class_name 定位要替换的某个 test class 的 body
+      // body 是 class 体的内部（缩进 4 空格的 def test_xxx），不包含 class 头本身
+      {"discriminator_id": "<some-id>", "body": "    def test_xxx(self):\n        ...\n"}
+      // 或：
+      // {"class_name": "TestXxx", "body": "..."}
+    ],
+    "tests_header": "..."        // 仅在 header 里的 import / helper 写错了时给整段
+  }
+}
+
+============================================================
+当前题目（要修的对象）
+============================================================
+
+$task_json

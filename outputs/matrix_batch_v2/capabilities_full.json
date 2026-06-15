@@ -1,0 +1,1185 @@
+{
+  "capabilities": [
+    {
+      "id": "cap-read-archive-listing",
+      "name": "List files inside archive",
+      "description": "List all entries inside a ZIP/TAR/RAR/7z archive without extracting them.",
+      "input_shape": "An archive file path.",
+      "output_shape": "List of inner file paths.",
+      "judgement_dimensions": [
+        "completeness",
+        "format_support"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-archive-member",
+      "name": "Read a member file inside archive",
+      "description": "Read a specified inner document from an archive directly.",
+      "input_shape": "Archive path plus inner-path selector.",
+      "output_shape": "Text content of the inner document.",
+      "judgement_dimensions": [
+        "correctness",
+        "format_support"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-csv",
+      "name": "Read CSV",
+      "description": "Read a CSV file with encoding fallback.",
+      "input_shape": "A .csv file path.",
+      "output_shape": "Tabular rows/columns.",
+      "judgement_dimensions": [
+        "correctness",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-docx",
+      "name": "Read DOCX",
+      "description": "Read a DOCX file's paragraph text and embedded images.",
+      "input_shape": "A .docx file.",
+      "output_shape": "Paragraph text and image binary content.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "ordering",
+        "node_locality",
+        "structure_capture",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2",
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-read-html",
+      "name": "Read HTML body text",
+      "description": "Extract the main body text from an HTML/HTM file.",
+      "input_shape": "An .html/.htm file path.",
+      "output_shape": "Plain text of the body content.",
+      "judgement_dimensions": [
+        "main_content_focus",
+        "noise_removal",
+        "completeness",
+        "correctness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-read-image",
+      "name": "Read image document",
+      "description": "Read an image of a document (photo, scan, screenshot) and obtain its visible content.",
+      "input_shape": "An image file (png/jpg/screenshot) of a document.",
+      "output_shape": "Visible text and visual structure observed in the image.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "ocr_accuracy"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-json",
+      "name": "Read JSON file",
+      "description": "Read a JSON file from disk and parse its contents.",
+      "input_shape": "A .json file path.",
+      "output_shape": "Parsed JSON value (records/objects).",
+      "judgement_dimensions": [
+        "correctness",
+        "schema_fidelity"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-markdown",
+      "name": "Read Markdown",
+      "description": "Read a Markdown file.",
+      "input_shape": "A .md file path.",
+      "output_shape": "Markdown source text/AST.",
+      "judgement_dimensions": [
+        "fidelity",
+        "correctness",
+        "completeness",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1",
+        "document-reader-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-odt",
+      "name": "Read ODT",
+      "description": "Read text content from an OpenDocument Text file.",
+      "input_shape": "An .odt file path.",
+      "output_shape": "Plain text content.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-pdf",
+      "name": "Read PDF",
+      "description": "Read a PDF document and obtain its text and structural content.",
+      "input_shape": "A .pdf file (native or scanned).",
+      "output_shape": "Text content and structure of the PDF.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "reading_order",
+        "layout_preservation",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-pptx",
+      "name": "Read PPTX",
+      "description": "Read a PowerPoint file and produce per-slide content.",
+      "input_shape": "A .pptx file path.",
+      "output_shape": "Per-slide text content.",
+      "judgement_dimensions": [
+        "slide_separation",
+        "completeness",
+        "node_locality",
+        "correctness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-rtf",
+      "name": "Read RTF",
+      "description": "Read text content from a Rich Text Format file.",
+      "input_shape": "A .rtf file path.",
+      "output_shape": "Plain text content.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-tabular",
+      "name": "Read tabular/log file",
+      "description": "Load a tabular log file (timeline JSON) into memory for downstream rendering.",
+      "input_shape": "A tabular/log file path.",
+      "output_shape": "Parsed in-memory rows.",
+      "judgement_dimensions": [
+        "correctness",
+        "robustness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-read-xlsx",
+      "name": "Read XLSX",
+      "description": "Read an Excel workbook and produce per-sheet table content.",
+      "input_shape": "A .xlsx file path.",
+      "output_shape": "Per-sheet table text or structured data.",
+      "judgement_dimensions": [
+        "sheet_separation",
+        "value_preservation",
+        "completeness",
+        "correctness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-extract-form-fields",
+      "name": "Extract form fields",
+      "description": "Enumerate every fillable field on a form with label, type, required flag, section, and conditional triggers.",
+      "input_shape": "A form document image or PDF.",
+      "output_shape": "A list of field objects with metadata.",
+      "judgement_dimensions": [
+        "recall",
+        "label_fidelity",
+        "metadata_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-extract-identity-fields",
+      "name": "Extract identity-document fields",
+      "description": "Extract the standard biographic fields from an identity document (passport, national ID, driver's license).",
+      "input_shape": "An identity-document image.",
+      "output_shape": "A structured set of identity fields per document type.",
+      "judgement_dimensions": [
+        "recall",
+        "value_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-extract-mrz",
+      "name": "Decode MRZ",
+      "description": "Decode TD1/TD2/TD3 MRZ strings into structured fields by character position.",
+      "input_shape": "Raw MRZ lines or an identity image with MRZ.",
+      "output_shape": "Structured MRZ fields with positional values.",
+      "judgement_dimensions": [
+        "positional_correctness",
+        "completeness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-select-fuzzy-filename",
+      "name": "Fuzzy inner filename selection",
+      "description": "Select the best matching inner file name using case-insensitive fuzzy matching when no exact match exists.",
+      "input_shape": "Requested inner-path and archive listing.",
+      "output_shape": "Resolved inner-path.",
+      "judgement_dimensions": [
+        "match_correctness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-docx-to-markdown",
+      "name": "Transform DOCX to Markdown",
+      "description": "Convert DOCX content into Markdown preserving headings/lists/inline.",
+      "input_shape": "DOCX content.",
+      "output_shape": "Markdown source.",
+      "judgement_dimensions": [
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-filter-rows",
+      "name": "Filter rows by criterion",
+      "description": "Select a subset of rows matching a filter argument and report matched vs total counts.",
+      "input_shape": "Tabular rows and filter value.",
+      "output_shape": "Filtered rows with match/total counts.",
+      "judgement_dimensions": [
+        "filter_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-transform-html-to-markdown",
+      "name": "Transform HTML to Markdown",
+      "description": "Convert HTML into Markdown preserving structure and links.",
+      "input_shape": "HTML content.",
+      "output_shape": "Markdown source.",
+      "judgement_dimensions": [
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-json-to-tabular",
+      "name": "Transform JSON to tabular",
+      "description": "Map JSON structures into multi-sheet tabular layouts.",
+      "input_shape": "JSON value.",
+      "output_shape": "Tabular data optionally keyed by sheet.",
+      "judgement_dimensions": [
+        "structure_fidelity",
+        "value_preservation"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-markdown-to-docx",
+      "name": "Transform Markdown to DOCX AST",
+      "description": "Convert Markdown structure into DOCX-compatible document AST preserving headings/lists/inline.",
+      "input_shape": "Markdown source/AST.",
+      "output_shape": "DOCX-ready document AST.",
+      "judgement_dimensions": [
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-markdown-to-html",
+      "name": "Transform Markdown to HTML",
+      "description": "Convert Markdown into HTML preserving structure.",
+      "input_shape": "Markdown source/AST.",
+      "output_shape": "HTML content.",
+      "judgement_dimensions": [
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-mask-pii",
+      "name": "Mask PII in identity fields",
+      "description": "Mask document/ID/personal numbers (e.g., XXXXX{last3}) in extracted output.",
+      "input_shape": "Extracted identity fields including sensitive numbers.",
+      "output_shape": "Same fields with sensitive numbers masked.",
+      "judgement_dimensions": [
+        "mask_compliance",
+        "format_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-transform-pdf-to-image",
+      "name": "Rasterize PDF pages to images",
+      "description": "Render PDF pages as raster images.",
+      "input_shape": "PDF pages.",
+      "output_shape": "Per-page images.",
+      "judgement_dimensions": [
+        "visual_fidelity",
+        "page_correspondence"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-image",
+      "name": "Render tabular data as image",
+      "description": "Render tabular data into a raster image visually representing the table.",
+      "input_shape": "Tabular data.",
+      "output_shape": "An in-memory image of the table.",
+      "judgement_dimensions": [
+        "visual_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-json",
+      "name": "Convert tabular data to JSON",
+      "description": "Map rows of tabular data into a JSON object/array structure.",
+      "input_shape": "Tabular rows/columns.",
+      "output_shape": "JSON value preserving values per row.",
+      "judgement_dimensions": [
+        "structure_fidelity",
+        "value_preservation"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-reader-1.0.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-markdown",
+      "name": "Render tabular data as Markdown table",
+      "description": "Convert tabular data into a Markdown table layout.",
+      "input_shape": "Rows and columns of tabular data.",
+      "output_shape": "A Markdown table with specified columns.",
+      "judgement_dimensions": [
+        "structure_fidelity",
+        "format_compliance"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-markdown-report",
+      "name": "Render tabular data as Markdown report",
+      "description": "Convert log/tabular entries plus a summary into a structured Markdown report excluding sensitive content.",
+      "input_shape": "Tabular rows and aggregated stats.",
+      "output_shape": "A Markdown report with entries and summary.",
+      "judgement_dimensions": [
+        "template_compliance",
+        "no_pii"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-stats",
+      "name": "Aggregate tabular data into statistics",
+      "description": "Compute counts, top/bottom items, first/last entries, and per-key breakdowns from tabular data.",
+      "input_shape": "Tabular rows.",
+      "output_shape": "Summary statistics dashboard data.",
+      "judgement_dimensions": [
+        "aggregation_correctness",
+        "completeness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-tabular",
+      "name": "Reformat tabular data",
+      "description": "Convert tabular data between CSV/Excel layouts preserving rows and columns.",
+      "input_shape": "Tabular data.",
+      "output_shape": "Tabular data ready for the target writer.",
+      "judgement_dimensions": [
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-text",
+      "name": "Render tabular content as text",
+      "description": "Render tabular spreadsheet data as flat text, optionally per-sheet.",
+      "input_shape": "Per-sheet tabular data.",
+      "output_shape": "Plain text representation of tables.",
+      "judgement_dimensions": [
+        "structure_visibility",
+        "value_preservation"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-transform-text-to-tabular",
+      "name": "Transform plain text to tabular",
+      "description": "Parse delimited text into tabular rows/columns.",
+      "input_shape": "Plain text content.",
+      "output_shape": "Tabular data.",
+      "judgement_dimensions": [
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-infer-classification",
+      "name": "Classify content",
+      "description": "Assign a category label to content based on signals/keywords/structure.",
+      "input_shape": "Document or content with classification signals.",
+      "output_shape": "A category label drawn from a defined taxonomy.",
+      "judgement_dimensions": [
+        "classification_accuracy",
+        "signal_consistency"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-clause-rewrite",
+      "name": "Rewrite clause to mitigate risk",
+      "description": "Generate replacement contractual language that mitigates an identified risk.",
+      "input_shape": "A flagged clause and its risk type.",
+      "output_shape": "A replacement clause as a quoted text block.",
+      "judgement_dimensions": [
+        "risk_mitigation",
+        "legal_validity",
+        "specificity"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-confidence-assessment",
+      "name": "Assess classification confidence",
+      "description": "Score the confidence of a classification and choose a downstream action flow.",
+      "input_shape": "A classification result with its supporting signals.",
+      "output_shape": "A confidence label and selected action decision.",
+      "judgement_dimensions": [
+        "calibration",
+        "decision_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-custom-instruction",
+      "name": "Apply natural-language conversion instruction",
+      "description": "Interpret a natural-language instruction (rename fields, extract tables, split content) and apply it during conversion.",
+      "input_shape": "Source content and a natural-language instruction.",
+      "output_shape": "Transformed content reflecting the instruction.",
+      "judgement_dimensions": [
+        "instruction_compliance",
+        "semantic_correctness"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-infer-data-request-prompt",
+      "name": "Generate scoped data-collection prompt",
+      "description": "Produce a user-facing data request prompt scoped strictly to fields actually present on the form.",
+      "input_shape": "Extracted field list and collection mode.",
+      "output_shape": "A prompt requesting only relevant data with notice.",
+      "judgement_dimensions": [
+        "scope_correctness",
+        "notice_compliance"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-derived-values",
+      "name": "Derive computed field values",
+      "description": "Compute values such as Age from DOB or duration from arrival/departure dates.",
+      "input_shape": "Source fields supporting derivation.",
+      "output_shape": "Derived value(s) for target fields.",
+      "judgement_dimensions": [
+        "derivation_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-risk-analysis",
+      "name": "Identify risks/issues in content",
+      "description": "Detect risk patterns, traps, or issues in a document and assign severity.",
+      "input_shape": "A full document plus a risk-pattern catalog.",
+      "output_shape": "List of findings with severity, location, recommendation.",
+      "judgement_dimensions": [
+        "recall",
+        "precision",
+        "severity_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-summary",
+      "name": "Summarize content",
+      "description": "Produce a plain-language summary covering required topics from a document.",
+      "input_shape": "A full document.",
+      "output_shape": "A bullet or prose summary of required topics.",
+      "judgement_dimensions": [
+        "coverage",
+        "faithfulness",
+        "plain_language"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-infer-translation",
+      "name": "Translate text",
+      "description": "Translate natural-language text from a source language to a target language while preserving meaning and protected tokens.",
+      "input_shape": "Text in source language with terminology and protection rules.",
+      "output_shape": "Text in target language with protected tokens preserved.",
+      "judgement_dimensions": [
+        "semantic_fidelity",
+        "fluency",
+        "terminology_compliance",
+        "token_preservation"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0"
+      ]
+    },
+    {
+      "id": "cap-preserve-original-docx",
+      "name": "Preserve original DOCX content",
+      "description": "Ensure annotations do not modify the original document content beyond adding highlight marks.",
+      "input_shape": "Original DOCX paragraphs/runs.",
+      "output_shape": "Annotated DOCX with original content intact.",
+      "judgement_dimensions": [
+        "content_integrity"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2"
+      ]
+    },
+    {
+      "id": "cap-preserve-protected-tokens",
+      "name": "Preserve protected tokens",
+      "description": "Keep brand names, trademarks, numbers+units, footnote symbols, and format placeholders unchanged across translation.",
+      "input_shape": "Source text with protected token rules.",
+      "output_shape": "Translated text with protected tokens preserved verbatim.",
+      "judgement_dimensions": [
+        "token_preservation_rate"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0"
+      ]
+    },
+    {
+      "id": "cap-preserve-style-docx",
+      "name": "Preserve DOCX styles",
+      "description": "Keep word/styles.xml and run/paragraph styling intact during translation.",
+      "input_shape": "Original DOCX styles artifacts.",
+      "output_shape": "Translated DOCX retaining original styling.",
+      "judgement_dimensions": [
+        "style_integrity"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0"
+      ]
+    },
+    {
+      "id": "cap-preserve-style-pptx",
+      "name": "Preserve PPTX template/style",
+      "description": "Keep theme, master, and content-type structures of the original presentation intact during translation.",
+      "input_shape": "Original PPTX template artifacts.",
+      "output_shape": "Translated PPTX retaining original template.",
+      "judgement_dimensions": [
+        "template_integrity",
+        "style_match"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0"
+      ]
+    },
+    {
+      "id": "cap-preserve-style-xlsx",
+      "name": "Preserve XLSX styles",
+      "description": "Keep xl/styles.xml and worksheet formatting intact during translation.",
+      "input_shape": "Original XLSX style artifacts.",
+      "output_shape": "Translated XLSX retaining original styling.",
+      "judgement_dimensions": [
+        "style_integrity"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0"
+      ]
+    },
+    {
+      "id": "cap-compare-aliases",
+      "name": "Match user data to form fields via aliases",
+      "description": "Map user-provided data fields to form labels using alias tables, choosing the most specific match.",
+      "input_shape": "Form field list and user profile data with alias tables.",
+      "output_shape": "Field-to-value mapping.",
+      "judgement_dimensions": [
+        "match_precision",
+        "specificity_preference"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-compare-cross-field",
+      "name": "Cross-field consistency comparison",
+      "description": "Compare related fields (e.g., DOB-derived age vs Age field; expiry vs travel-date rule) to detect inconsistencies.",
+      "input_shape": "Multiple related fields with computable derivations.",
+      "output_shape": "Consistency status and warnings.",
+      "judgement_dimensions": [
+        "correctness",
+        "rule_coverage"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-compare-documents",
+      "name": "Compare two documents for duplicates",
+      "description": "Compare paragraph text across two DOCX documents (exact or fuzzy similarity) to find duplicates.",
+      "input_shape": "Two parsed DOCX paragraph sets and a comparison mode/threshold.",
+      "output_shape": "List of duplicate paragraph pairs with similarity scores.",
+      "judgement_dimensions": [
+        "recall",
+        "precision",
+        "threshold_compliance"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2"
+      ]
+    },
+    {
+      "id": "cap-compare-images-by-hash",
+      "name": "Compare images by content hash",
+      "description": "Detect identical images across documents by computing and comparing MD5 hashes of image bytes.",
+      "input_shape": "Image binaries extracted from two documents.",
+      "output_shape": "Pairs of images with identical hashes.",
+      "judgement_dimensions": [
+        "hash_correctness",
+        "recall"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2"
+      ]
+    },
+    {
+      "id": "cap-compose-batch",
+      "name": "Run batch conversion across files",
+      "description": "Iterate a list of files, converting each to the requested target format and collecting per-file results.",
+      "input_shape": "A list of files and a target format.",
+      "output_shape": "A set of converted output files plus a per-file status report.",
+      "judgement_dimensions": [
+        "robustness",
+        "completeness",
+        "error_isolation"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-compose-pdf-from-images",
+      "name": "Compose PDF from images",
+      "description": "Combine multiple images into a single PDF document.",
+      "input_shape": "Ordered list of images.",
+      "output_shape": "A multi-page PDF.",
+      "judgement_dimensions": [
+        "page_order",
+        "validity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-compose-report",
+      "name": "Assemble multi-section report",
+      "description": "Compose multiple analysis fragments into a final structured report following a template.",
+      "input_shape": "Multiple analysis fragments (summary, findings, checks, scores).",
+      "output_shape": "A single formatted report with header and sections.",
+      "judgement_dimensions": [
+        "template_compliance",
+        "completeness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-validate-checklist",
+      "name": "Run checklist validation",
+      "description": "Check whether a document satisfies a list of required items/clauses.",
+      "input_shape": "A document and a domain-specific checklist.",
+      "output_shape": "Per-item pass/fail or addressed/acceptable status.",
+      "judgement_dimensions": [
+        "coverage",
+        "correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-validate-field-values",
+      "name": "Validate field values",
+      "description": "Apply format and consistency rules (date format, regex shape, future-date logic, cross-field consistency) to filled values.",
+      "input_shape": "A field-to-value mapping with validation rules.",
+      "output_shape": "Per-field validation status and warnings.",
+      "judgement_dimensions": [
+        "rule_coverage",
+        "correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-validate-format-support",
+      "name": "Validate format support and integrity",
+      "description": "Detect unsupported formats and corrupted files; route to friendly error messaging instead of failing the batch.",
+      "input_shape": "An input file and target format.",
+      "output_shape": "Pass/fail with reason for unsupported or corrupted inputs.",
+      "judgement_dimensions": [
+        "detection_correctness",
+        "error_messaging"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-validate-mrz-checkdigits",
+      "name": "Verify MRZ check digits",
+      "description": "Compute and verify MRZ check digits using the 7-3-1 weighting algorithm.",
+      "input_shape": "Decoded MRZ fields with raw substrings and positions.",
+      "output_shape": "Per-field VALID/INVALID status including composite.",
+      "judgement_dimensions": [
+        "algorithmic_correctness",
+        "completeness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-validate-pii-redaction",
+      "name": "Validate that output contains no PII",
+      "description": "Ensure a generated text contains only category-level descriptions and no PII.",
+      "input_shape": "A summary or message string.",
+      "output_shape": "Pass/fail PII check with offending tokens if any.",
+      "judgement_dimensions": [
+        "pii_recall",
+        "false_positive_rate"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-write-csv",
+      "name": "Write CSV",
+      "description": "Write tabular data into a CSV file.",
+      "input_shape": "Tabular rows/columns.",
+      "output_shape": "A .csv file.",
+      "judgement_dimensions": [
+        "validity",
+        "value_preservation"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-docx",
+      "name": "Write annotated DOCX",
+      "description": "Write a DOCX output that contains highlight/annotation marks layered on the original content.",
+      "input_shape": "Original DOCX content and a list of annotations.",
+      "output_shape": "A .docx file with highlights/annotations applied.",
+      "judgement_dimensions": [
+        "structural_validity",
+        "highlight_correctness",
+        "validity",
+        "structure_integrity",
+        "style_correctness"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-html",
+      "name": "Write HTML",
+      "description": "Write content into an HTML file.",
+      "input_shape": "Document AST or formatted content.",
+      "output_shape": "An .html file.",
+      "judgement_dimensions": [
+        "validity",
+        "structural_correctness"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-image",
+      "name": "Write image file",
+      "description": "Write rasterized content into a PNG or JPG image file.",
+      "input_shape": "An in-memory rendering and target format.",
+      "output_shape": "A .png or .jpg file.",
+      "judgement_dimensions": [
+        "validity",
+        "visual_fidelity"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-json",
+      "name": "Write JSON file",
+      "description": "Serialize structured data into a JSON file.",
+      "input_shape": "Structured data (objects/arrays) and target path.",
+      "output_shape": "A .json file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "schema_fidelity"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-json-log",
+      "name": "Write/update JSON log file",
+      "description": "Append, modify, or clear entries in a JSON log file with field schema preservation.",
+      "input_shape": "JSON log path and operation (append/delete/clear).",
+      "output_shape": "Updated JSON log file.",
+      "judgement_dimensions": [
+        "schema_preservation",
+        "operation_correctness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-write-markdown",
+      "name": "Write Markdown file",
+      "description": "Write structured content into a Markdown file.",
+      "input_shape": "Structured content with headings, tables, lists.",
+      "output_shape": "A .md file.",
+      "judgement_dimensions": [
+        "structural_correctness",
+        "readability"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-pdf",
+      "name": "Write PDF",
+      "description": "Produce a PDF output containing translated text via Word→PDF rebuild or direct overlay.",
+      "input_shape": "Translated text plus source layout (or interim DOCX).",
+      "output_shape": "A .pdf file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "layout_preservation",
+        "page_order"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-pptx",
+      "name": "Write PPTX",
+      "description": "Write back a PPTX archive with translated text nodes inserted.",
+      "input_shape": "Original PPTX structure plus translated text nodes.",
+      "output_shape": "A .pptx file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "structure_integrity"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0"
+      ]
+    },
+    {
+      "id": "cap-write-text",
+      "name": "Write text/report output",
+      "description": "Render a structured analysis or message as a textual output.",
+      "input_shape": "Structured fields, sections, or messages.",
+      "output_shape": "Formatted text output.",
+      "judgement_dimensions": [
+        "structural_correctness",
+        "format_compliance"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-write-text-report",
+      "name": "Write plain-text comparison report",
+      "description": "Write a detailed comparison/duplicate report as a plain-text file.",
+      "input_shape": "Comparison findings and metadata.",
+      "output_shape": "A .txt report file.",
+      "judgement_dimensions": [
+        "completeness",
+        "readability"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2"
+      ]
+    },
+    {
+      "id": "cap-write-xlsx",
+      "name": "Write XLSX",
+      "description": "Write back an XLSX archive with translated shared strings.",
+      "input_shape": "Original XLSX structure plus translated shared strings.",
+      "output_shape": "A .xlsx file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "structure_integrity",
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    }
+  ],
+  "skill_capability_map": {
+    "document-reader-1.0.0": [
+      "cap-read-archive-listing",
+      "cap-read-archive-member",
+      "cap-read-docx",
+      "cap-read-html",
+      "cap-read-markdown",
+      "cap-read-odt",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-rtf",
+      "cap-read-xlsx",
+      "cap-select-fuzzy-filename",
+      "cap-transform-tabular-to-json",
+      "cap-transform-tabular-to-text"
+    ],
+    "document-format-converter-1.0.0": [
+      "cap-read-csv",
+      "cap-read-docx",
+      "cap-read-html",
+      "cap-read-image",
+      "cap-read-json",
+      "cap-read-markdown",
+      "cap-read-odt",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-rtf",
+      "cap-read-xlsx",
+      "cap-transform-docx-to-markdown",
+      "cap-transform-html-to-markdown",
+      "cap-transform-json-to-tabular",
+      "cap-transform-markdown-to-docx",
+      "cap-transform-markdown-to-html",
+      "cap-transform-pdf-to-image",
+      "cap-transform-tabular-to-image",
+      "cap-transform-tabular-to-json",
+      "cap-transform-tabular-to-tabular",
+      "cap-transform-text-to-tabular",
+      "cap-infer-custom-instruction",
+      "cap-compose-batch",
+      "cap-compose-pdf-from-images",
+      "cap-validate-format-support",
+      "cap-write-csv",
+      "cap-write-docx",
+      "cap-write-html",
+      "cap-write-image",
+      "cap-write-json",
+      "cap-write-markdown",
+      "cap-write-pdf",
+      "cap-write-xlsx"
+    ],
+    "docx-compare-1.0.2": [
+      "cap-read-docx",
+      "cap-preserve-original-docx",
+      "cap-compare-documents",
+      "cap-compare-images-by-hash",
+      "cap-write-docx",
+      "cap-write-text-report"
+    ],
+    "document-translate-0.1.0": [
+      "cap-read-docx",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-xlsx",
+      "cap-infer-translation",
+      "cap-preserve-protected-tokens",
+      "cap-preserve-style-docx",
+      "cap-preserve-style-pptx",
+      "cap-preserve-style-xlsx",
+      "cap-write-docx",
+      "cap-write-pdf",
+      "cap-write-pptx",
+      "cap-write-xlsx"
+    ],
+    "doc-process-4.1.1": [
+      "cap-read-docx",
+      "cap-read-html",
+      "cap-read-image",
+      "cap-read-json",
+      "cap-read-markdown",
+      "cap-read-odt",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-rtf",
+      "cap-read-tabular",
+      "cap-read-xlsx",
+      "cap-extract-form-fields",
+      "cap-extract-identity-fields",
+      "cap-extract-mrz",
+      "cap-transform-filter-rows",
+      "cap-transform-mask-pii",
+      "cap-transform-tabular-to-json",
+      "cap-transform-tabular-to-markdown",
+      "cap-transform-tabular-to-markdown-report",
+      "cap-transform-tabular-to-stats",
+      "cap-infer-classification",
+      "cap-infer-clause-rewrite",
+      "cap-infer-confidence-assessment",
+      "cap-infer-data-request-prompt",
+      "cap-infer-derived-values",
+      "cap-infer-risk-analysis",
+      "cap-infer-summary",
+      "cap-compare-aliases",
+      "cap-compare-cross-field",
+      "cap-compose-report",
+      "cap-validate-checklist",
+      "cap-validate-field-values",
+      "cap-validate-mrz-checkdigits",
+      "cap-validate-pii-redaction",
+      "cap-write-json",
+      "cap-write-json-log",
+      "cap-write-markdown",
+      "cap-write-text"
+    ]
+  }
+}

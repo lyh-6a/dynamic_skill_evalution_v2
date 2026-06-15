@@ -1,0 +1,19 @@
+{
+  "without-skill": [
+    "cap-read-docx",
+    "cap-read-html",
+    "cap-read-image",
+    "cap-read-json",
+    "cap-read-markdown",
+    "cap-read-odt",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-rtf",
+    "cap-read-xlsx",
+    "cap-transform-tabular-to-json",
+    "cap-write-json",
+    "cap-write-markdown",
+    "cap-write-pdf",
+    "cap-write-xlsx"
+  ]
+}

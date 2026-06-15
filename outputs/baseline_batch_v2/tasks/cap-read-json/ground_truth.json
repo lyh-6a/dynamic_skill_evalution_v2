@@ -1,0 +1,16 @@
+{
+  "data": {
+    "id": 42,
+    "name": "widget",
+    "price": 19.95,
+    "in_stock": true,
+    "tags": [
+      "alpha",
+      "beta"
+    ],
+    "meta": {
+      "weight": 1.5,
+      "color": "red"
+    }
+  }
+}

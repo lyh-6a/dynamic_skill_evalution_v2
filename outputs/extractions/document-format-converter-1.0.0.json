@@ -1,0 +1,889 @@
+{
+  "schema_version": "skill-extractor-v1",
+  "skill_id": "document-format-converter-1.0.0",
+  "source_path": "/home/liuyuhan/dynamic_skill_evalution/doc_skills/document-format-converter-1.0.0/SKILL.md",
+  "scheduling": {
+    "skill_name": "Batch Format Converter",
+    "skill_goal": "Batch-convert files across formats: CSV↔Excel↔JSON↔PDF/Markdown/DOCX/HTML/PNG.",
+    "tags": [
+      "format-conversion",
+      "batch",
+      "csv",
+      "excel",
+      "json",
+      "pdf",
+      "markdown",
+      "docx",
+      "html",
+      "image"
+    ],
+    "expected_inputs": [
+      "csv",
+      "xlsx",
+      "xls",
+      "json",
+      "markdown",
+      "docx",
+      "html",
+      "pdf",
+      "png",
+      "jpg",
+      "txt"
+    ],
+    "expected_outputs": [
+      "xlsx",
+      "json",
+      "csv",
+      "png",
+      "docx",
+      "html",
+      "markdown",
+      "jpg",
+      "pdf"
+    ],
+    "dependencies": [
+      "pandas",
+      "PyMuPDF",
+      "pdfplumber",
+      "pandoc",
+      "python-docx",
+      "Pillow"
+    ]
+  },
+  "capability_candidates": [
+    {
+      "capability_id": "csv-to-excel",
+      "name": "Convert CSV to Excel",
+      "description": "Convert a CSV file into an Excel (.xlsx) workbook.",
+      "matched_terms": [
+        "CSV | Excel (.xlsx)、JSON"
+      ],
+      "inputs": [
+        "csv"
+      ],
+      "outputs": [
+        "xlsx"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "source_encoding",
+          "values": [
+            "UTF-8",
+            "GBK",
+            "ISO-8859-1"
+          ],
+          "default": "UTF-8"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Input file is CSV",
+          "source": "explicit",
+          "evidence": "SKILL.md:13"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output file is a valid .xlsx workbook readable by pandas",
+            "source": "explicit",
+            "evidence": "SKILL.md:13"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "Encoding error — auto-fallback UTF-8 → GBK → ISO-8859-1",
+          "source": "explicit",
+          "evidence": "SKILL.md:105"
+        },
+        {
+          "text": "Corrupted file is skipped and reported",
+          "source": "explicit",
+          "evidence": "SKILL.md:107"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "csv-to-json",
+      "name": "Convert CSV to JSON",
+      "description": "Convert a CSV file into JSON.",
+      "matched_terms": [
+        "CSV | Excel (.xlsx)、JSON"
+      ],
+      "inputs": [
+        "csv"
+      ],
+      "outputs": [
+        "json"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "source_encoding",
+          "values": [
+            "UTF-8",
+            "GBK",
+            "ISO-8859-1"
+          ],
+          "default": "UTF-8"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Input file is CSV",
+          "source": "explicit",
+          "evidence": "SKILL.md:13"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is valid JSON",
+            "source": "explicit",
+            "evidence": "SKILL.md:13"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "JSON records preserve CSV rows and column values",
+            "source": "explicit",
+            "evidence": "SKILL.md:13"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Encoding error — auto-fallback UTF-8 → GBK → ISO-8859-1",
+          "source": "explicit",
+          "evidence": "SKILL.md:105"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "excel-to-json",
+      "name": "Convert Excel to JSON",
+      "description": "Convert an Excel (.xlsx/.xls) workbook into JSON.",
+      "matched_terms": [
+        "Excel (.xlsx/.xls) | JSON、CSV、PNG（表格图片）"
+      ],
+      "inputs": [
+        "xlsx",
+        "xls"
+      ],
+      "outputs": [
+        "json"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is Excel (.xlsx or .xls)",
+          "source": "explicit",
+          "evidence": "SKILL.md:14"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is valid JSON",
+            "source": "explicit",
+            "evidence": "SKILL.md:14"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "JSON preserves cell values from the Excel sheet(s)",
+            "source": "explicit",
+            "evidence": "SKILL.md:14"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Corrupted file is skipped and reported",
+          "source": "explicit",
+          "evidence": "SKILL.md:107"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "excel-to-csv",
+      "name": "Convert Excel to CSV",
+      "description": "Convert an Excel (.xlsx/.xls) workbook into CSV.",
+      "matched_terms": [
+        "Excel (.xlsx/.xls) | JSON、CSV、PNG（表格图片）"
+      ],
+      "inputs": [
+        "xlsx",
+        "xls"
+      ],
+      "outputs": [
+        "csv"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is Excel (.xlsx or .xls)",
+          "source": "explicit",
+          "evidence": "SKILL.md:14"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is valid CSV",
+            "source": "explicit",
+            "evidence": "SKILL.md:14"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "CSV preserves rows and columns from the Excel sheet",
+            "source": "explicit",
+            "evidence": "SKILL.md:14"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "excel-to-image",
+      "name": "Render Excel Table as Image",
+      "description": "Render an Excel table as a PNG image.",
+      "matched_terms": [
+        "PNG（表格图片）"
+      ],
+      "inputs": [
+        "xlsx",
+        "xls"
+      ],
+      "outputs": [
+        "png"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is Excel (.xlsx or .xls)",
+          "source": "explicit",
+          "evidence": "SKILL.md:14"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is a valid PNG image of the table",
+            "source": "explicit",
+            "evidence": "SKILL.md:14"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Rendered image visually represents the source table contents",
+            "source": "explicit",
+            "evidence": "SKILL.md:14"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "json-to-excel",
+      "name": "Convert JSON to Multi-Sheet Excel",
+      "description": "Convert JSON into an Excel workbook with multiple sheets.",
+      "matched_terms": [
+        "JSON | Excel（多Sheet）"
+      ],
+      "inputs": [
+        "json"
+      ],
+      "outputs": [
+        "xlsx"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is JSON",
+          "source": "explicit",
+          "evidence": "SKILL.md:15"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output .xlsx contains multiple sheets corresponding to JSON structure",
+            "source": "explicit",
+            "evidence": "SKILL.md:15"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "markdown-to-docx",
+      "name": "Convert Markdown to DOCX",
+      "description": "Convert a Markdown document into a DOCX file.",
+      "matched_terms": [
+        "Markdown | DOCX、HTML"
+      ],
+      "inputs": [
+        "markdown"
+      ],
+      "outputs": [
+        "docx"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is Markdown",
+          "source": "explicit",
+          "evidence": "SKILL.md:16"
+        },
+        {
+          "text": "pandoc and python-docx available",
+          "source": "explicit",
+          "evidence": "SKILL.md:62"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is a valid .docx file",
+            "source": "explicit",
+            "evidence": "SKILL.md:16"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "DOCX preserves Markdown headings, lists, and inline formatting",
+            "source": "explicit",
+            "evidence": "SKILL.md:16"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "markdown-to-html",
+      "name": "Convert Markdown to HTML",
+      "description": "Convert a Markdown document into HTML.",
+      "matched_terms": [
+        "Markdown | DOCX、HTML"
+      ],
+      "inputs": [
+        "markdown"
+      ],
+      "outputs": [
+        "html"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is Markdown",
+          "source": "explicit",
+          "evidence": "SKILL.md:16"
+        },
+        {
+          "text": "pandoc available",
+          "source": "explicit",
+          "evidence": "SKILL.md:62"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is valid HTML",
+            "source": "explicit",
+            "evidence": "SKILL.md:16"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "HTML preserves Markdown structure and content",
+            "source": "explicit",
+            "evidence": "SKILL.md:16"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "docx-to-markdown",
+      "name": "Convert DOCX to Markdown",
+      "description": "Convert a DOCX document into Markdown.",
+      "matched_terms": [
+        "DOCX | Markdown"
+      ],
+      "inputs": [
+        "docx"
+      ],
+      "outputs": [
+        "markdown"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is DOCX",
+          "source": "explicit",
+          "evidence": "SKILL.md:17"
+        },
+        {
+          "text": "pandoc and python-docx available",
+          "source": "explicit",
+          "evidence": "SKILL.md:62"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is a valid Markdown file",
+            "source": "explicit",
+            "evidence": "SKILL.md:17"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Markdown preserves DOCX headings, paragraphs, lists, and inline formatting",
+            "source": "explicit",
+            "evidence": "SKILL.md:17"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Corrupted file is skipped and reported",
+          "source": "explicit",
+          "evidence": "SKILL.md:107"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "html-to-markdown",
+      "name": "Convert HTML to Markdown",
+      "description": "Convert an HTML document into Markdown.",
+      "matched_terms": [
+        "HTML | Markdown"
+      ],
+      "inputs": [
+        "html"
+      ],
+      "outputs": [
+        "markdown"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is HTML",
+          "source": "explicit",
+          "evidence": "SKILL.md:18"
+        },
+        {
+          "text": "pandoc available",
+          "source": "explicit",
+          "evidence": "SKILL.md:62"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is a valid Markdown file",
+            "source": "explicit",
+            "evidence": "SKILL.md:18"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Markdown preserves HTML headings, lists, links, and inline formatting",
+            "source": "explicit",
+            "evidence": "SKILL.md:18"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "pdf-to-image",
+      "name": "Convert PDF to Images",
+      "description": "Render PDF pages as PNG or JPG images.",
+      "matched_terms": [
+        "PDF | PNG/JPG（图片）"
+      ],
+      "inputs": [
+        "pdf"
+      ],
+      "outputs": [
+        "png",
+        "jpg"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "image_format",
+          "values": [
+            "png",
+            "jpg"
+          ],
+          "default": "png"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Input file is PDF",
+          "source": "explicit",
+          "evidence": "SKILL.md:19"
+        },
+        {
+          "text": "PyMuPDF and pdfplumber available",
+          "source": "explicit",
+          "evidence": "SKILL.md:61"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output image files exist in PNG or JPG format",
+            "source": "explicit",
+            "evidence": "SKILL.md:19"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Each image visually represents the corresponding PDF page",
+            "source": "explicit",
+            "evidence": "SKILL.md:19"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Corrupted PDF is skipped and reported",
+          "source": "explicit",
+          "evidence": "SKILL.md:107"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "image-to-pdf",
+      "name": "Convert Images to PDF",
+      "description": "Combine PNG/JPG images into a PDF document.",
+      "matched_terms": [
+        "图片 (PNG/JPG) | PDF"
+      ],
+      "inputs": [
+        "png",
+        "jpg"
+      ],
+      "outputs": [
+        "pdf"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file(s) are PNG or JPG images",
+          "source": "explicit",
+          "evidence": "SKILL.md:20"
+        },
+        {
+          "text": "Pillow (PIL) available",
+          "source": "explicit",
+          "evidence": "SKILL.md:63"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is a valid PDF file containing the input images",
+            "source": "explicit",
+            "evidence": "SKILL.md:20"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "txt-to-csv",
+      "name": "Convert TXT to CSV",
+      "description": "Convert a TXT file into CSV.",
+      "matched_terms": [
+        "TXT | CSV"
+      ],
+      "inputs": [
+        "txt"
+      ],
+      "outputs": [
+        "csv"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "source_encoding",
+          "values": [
+            "UTF-8",
+            "GBK",
+            "ISO-8859-1"
+          ],
+          "default": "UTF-8"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Input file is TXT",
+          "source": "explicit",
+          "evidence": "SKILL.md:21"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output is valid CSV",
+            "source": "explicit",
+            "evidence": "SKILL.md:21"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "Encoding error — auto-fallback UTF-8 → GBK → ISO-8859-1",
+          "source": "explicit",
+          "evidence": "SKILL.md:105"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "batch-conversion",
+      "name": "Batch Multi-File Conversion",
+      "description": "Convert multiple uploaded files to a chosen target format in a single batch.",
+      "matched_terms": [
+        "批量文件格式转换",
+        "一键批量转换",
+        "转换以下文件",
+        "目标格式：XLSX"
+      ],
+      "inputs": [
+        "csv",
+        "xlsx",
+        "json",
+        "markdown",
+        "docx",
+        "html",
+        "pdf",
+        "png",
+        "jpg",
+        "txt"
+      ],
+      "outputs": [
+        "xlsx",
+        "csv",
+        "json",
+        "markdown",
+        "docx",
+        "html",
+        "pdf",
+        "png",
+        "jpg"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "target_format",
+          "values": [
+            "xlsx",
+            "csv",
+            "json",
+            "markdown",
+            "docx",
+            "html",
+            "pdf",
+            "png",
+            "jpg"
+          ],
+          "default": "xlsx"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "A list of files is provided with a chosen target format",
+          "source": "explicit",
+          "evidence": "SKILL.md:42"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Each successfully converted input produces one output file in the requested target format",
+            "source": "explicit",
+            "evidence": "SKILL.md:44"
+          },
+          {
+            "text": "Corrupted files are skipped and reported, processing continues to next file",
+            "source": "explicit",
+            "evidence": "SKILL.md:107"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "Unsupported format → friendly prompt with suggested formats",
+          "source": "explicit",
+          "evidence": "SKILL.md:106"
+        },
+        {
+          "text": "File corruption → skip and report, continue with next file",
+          "source": "explicit",
+          "evidence": "SKILL.md:107"
+        }
+      ],
+      "level": "coarse"
+    },
+    {
+      "capability_id": "ai-custom-conversion",
+      "name": "AI-Customized Conversion Instructions",
+      "description": "Apply natural-language transformation instructions during conversion, such as renaming fields or extracting specific content into a different format.",
+      "matched_terms": [
+        "AI自定义转换",
+        "把这个CSV的字段名改成英文，然后转成JSON",
+        "把这份DOCX里的表格提取成Excel，其他内容转成Markdown"
+      ],
+      "inputs": [
+        "csv",
+        "docx"
+      ],
+      "outputs": [
+        "json",
+        "xlsx",
+        "markdown"
+      ],
+      "actions": [
+        "READ",
+        "INFER",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "instruction_intent",
+          "values": [
+            "rename-fields",
+            "extract-tables",
+            "split-content"
+          ],
+          "default": "rename-fields"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Natural-language conversion instruction is provided",
+          "source": "explicit",
+          "evidence": "SKILL.md:50"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output file(s) exist in the format(s) specified by the instruction",
+            "source": "explicit",
+            "evidence": "SKILL.md:51"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Output reflects the requested transformation (e.g. field names renamed, tables extracted)",
+            "source": "explicit",
+            "evidence": "SKILL.md:50"
+          }
+        ]
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    }
+  ],
+  "extractor_meta": {
+    "schema_version": "skill-extractor-v1",
+    "backend": "anthropic",
+    "model": "glm-5.1",
+    "usage_tokens": 9019
+  }
+}

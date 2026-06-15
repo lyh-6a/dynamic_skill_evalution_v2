@@ -1,0 +1,121 @@
+你正在为**一条已经选定的差异点**出一道题。差异点是上一步差异分析的产物，
+已经告诉你"哪几个 skill 在这件事上会赢、哪几个会输、用什么测能看出来"。
+你的任务是把这条差异**精准地翻译成可跑的题**，让 instruction 和 tests 同时**强制**触发它。
+
+不允许把题面写回成"通用 PDF→DOCX"那种中位数题。
+
+============================================================
+强约束：differentiator 必须落地到题面
+============================================================
+
+1. **instruction_md 里必须有一句硬要求**直接对应 discriminator.test_handle。
+   例：discriminator 是"扫描件 OCR" → instruction 必须写
+       "the input /root/email.pdf is a **scanned image**, you must OCR it"。
+   不许写"能读就行"。
+
+2. **tests_py 里必须有 ≥1 条断言**直接核对 discriminator.test_handle 描述的指标。
+   例：test_handle = "断言提取出的表格行数 = 3" → tests 必须 `assert len(rows) == 3`。
+   不许只断言 "docx 存在"。
+
+3. **renderer_py 必须真的造出能触发这条差异的输入文件**。
+   例：差异是"扫描件" → renderer 必须把文本先画成图、再嵌进 PDF；
+       而不是渲染一个普通的文本型 PDF 然后嘴上说"假设是扫描件"。
+
+4. **candidate_solutions 复用 discriminator.skill_verdicts**：
+   - skill_id / capability_id 直接来自 verdicts 的 key
+   - approach 必须照搬/改写 verdict 的预测理由，**不要重新解释**
+   - 不要新增 verdict 里没列的 skill
+
+5. **task_toml_extras.tags 必须包含** `"discriminator:<discriminator.id>"`
+   和 `"axis:<discriminator.axis>"`。
+
+============================================================
+自验证闭环（和单步生成时一样）
+============================================================
+
+ground_truth（结构化真值）→ renderer_py（造输入文件）→ solution_py（读输入还原真值）→ tests_py（在 solution 输出上断言）
+我们会跑全链路，跑不通的题直接丢。
+
+============================================================
+renderer_py 规则
+============================================================
+
+- 完整可执行 Python，单独 `python script.py` 能跑。
+- 读环境变量：GROUND_TRUTH_PATH（json）/ OUTPUT_PATH（必须把生成的文件写到这里）。
+- 不要硬编码 /root/...，不要假设 CWD。
+- ground_truth 的所有关键字段必须真的体现在文件里。
+- **PDF 文本布局陷阱**：标签和数值要拼成一个字符串再 `drawString`，不要分两次画。
+- 校验环境已预装常见 PDF/图像/Office 库，按需 import。
+
+============================================================
+solution_py 规则
+============================================================
+
+- 完整可执行 Python，`python solution.py` 直接产出 output_path。
+- 只能读 assets 文件（路径硬编码 /root/...），不许读 ground_truth.json。
+- 只能用 Python 包（stdlib 或预装库），禁止 subprocess 调外部二进制
+  （pdftotext / tesseract / pandoc 等）。
+- 写 regex 时注意标签前缀冲突（Subtotal vs Total）。
+
+============================================================
+tests_py 规则
+============================================================
+
+- 只能 import 标准库（json / os / re / pathlib / decimal / math / zipfile）。
+- 先检查 output_path 文件存在。
+- 必须对 discriminator.test_handle 有专门断言（这是这道题存在的理由）。
+- 5–10 条 assert 即可，过多会让真实 skill 难过线。
+- 路径写绝对 /root/...，校验器会替换。
+
+============================================================
+输出格式（只输出 JSON，没有围栏没有说明）
+============================================================
+
+{
+  "task_id": "kebab-case，建议包含 discriminator.id 作为可识别后缀",
+  "name": "短名",
+
+  "candidate_solutions": [
+    {"skill_id": "...", "capability_id": "...", "approach": "复用 discriminator.skill_verdicts 里的预测"}
+  ],
+
+  "instruction_md": "硬约束直击 discriminator.test_handle",
+  "ground_truth": { ... },
+  "output_path": "/root/result.json",
+
+  "assets": [
+    {"path": "...", "container_path": "/root/...", "kind": "binary", "renderer_py": "..."}
+  ],
+
+  "solution_py": "...",
+  "tests_py": "...",
+
+  "task_toml_extras": {
+    "difficulty": "easy|medium|hard",
+    "category":   "...",
+    "tags":       ["discriminator:<id>", "axis:<axis>", ...]
+  }
+}
+
+============================================================
+全局硬性规则（违反则该题作废）
+============================================================
+
+- 不要扩大或缩小 discriminator 选定的 skill 集合。
+- 不要把题面退化成"通用 X→Y"。
+- ground_truth 必须能完全决定 tests_py 里所有期望值。
+- 二进制 asset 必须配 renderer_py；文本 asset 用 kind="text"。
+- 不输出除上面那个 JSON 之外的任何文字。
+
+============================================================
+本题输入
+============================================================
+
+用户 query：
+$query
+
+被选定的 discriminator（你这道题就是为它存在的）：
+$discriminator
+
+参与的 skill（仅 discriminator.skill_verdicts 里列到的，原始信息供你写 candidate.approach）：
+$skills_payload

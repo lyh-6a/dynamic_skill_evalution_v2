@@ -1,0 +1,56 @@
+{
+  "document-reader-1.0.0": [
+    "cap-read-docx",
+    "cap-read-html",
+    "cap-read-markdown",
+    "cap-read-odt",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-rtf",
+    "cap-read-xlsx",
+    "cap-transform-tabular-to-json"
+  ],
+  "document-format-converter-1.0.0": [
+    "cap-read-docx",
+    "cap-read-html",
+    "cap-read-image",
+    "cap-read-json",
+    "cap-read-markdown",
+    "cap-read-odt",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-rtf",
+    "cap-read-xlsx",
+    "cap-transform-tabular-to-json",
+    "cap-write-json",
+    "cap-write-markdown",
+    "cap-write-pdf",
+    "cap-write-xlsx"
+  ],
+  "docx-compare-1.0.2": [
+    "cap-read-docx"
+  ],
+  "document-translate-0.1.0": [
+    "cap-read-docx",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-xlsx",
+    "cap-write-pdf",
+    "cap-write-xlsx"
+  ],
+  "doc-process-4.1.1": [
+    "cap-read-docx",
+    "cap-read-html",
+    "cap-read-image",
+    "cap-read-json",
+    "cap-read-markdown",
+    "cap-read-odt",
+    "cap-read-pdf",
+    "cap-read-pptx",
+    "cap-read-rtf",
+    "cap-read-xlsx",
+    "cap-transform-tabular-to-json",
+    "cap-write-json",
+    "cap-write-markdown"
+  ]
+}

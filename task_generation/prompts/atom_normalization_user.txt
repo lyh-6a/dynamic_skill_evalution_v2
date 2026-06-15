@@ -1,0 +1,100 @@
+你正在审阅一组**已经做过原子分解**的 capability 列表，目标是**找出语义重复**的列
+并把它们合并成一组 canonical id。
+
+============================================================
+背景
+============================================================
+
+上游已经把每个 skill 的 capability_candidates 拆成了原子操作（READ / WRITE / TRANSFORM /
+INFER / EXTRACT / PRESERVE / COMPARE / COMPOSE / VALIDATE），并按 id 求并集合并过一次。
+但是不同 skill 在 stage-1 的命名仍然有出入，比如：
+
+  - skill A 出了  cap-read-pdf
+  - skill B 出了  cap-read-document   ← 同一件事的笼统命名
+
+这俩描述的是**同一种能力**，应该合并。你的任务就是找到这种重复。
+
+⚠️ 这一步**不**是再次聚类、**不**重新分类，**不**改 kind。
+只做一件事：当两个/多个原子描述同一件事时，挑一个最具体、信息量最大的 id 作为 canonical，
+其它 id 都变成它的别名（absorbs）。
+
+============================================================
+合并判定规则
+============================================================
+
+合并 A → 当且仅当所有以下条件**全部满足**：
+  1. **kind 完全一样**（READ 不能合并到 EXTRACT；TRANSFORM 不能合并到 INFER）。
+  2. input_shape 在概念上等价或一方更具体（例如 generic "document" 包含 specific "pdf"）。
+  3. output_shape 在概念上等价或一方更具体。
+  4. description 描述的是同一件事，不是相似但不同的事。
+
+合并选 canonical 的优先级：
+  - 更具体 > 更笼统。 cap-read-pdf 优先于 cap-read-document。
+  - 更具体 > 更具体。 cap-read-pdf-native-text 优先于 cap-read-pdf。
+  - 一对多场景（cap-read-document 可以拆到 cap-read-pdf, cap-read-docx, cap-read-xlsx）：
+    把笼统 id 变成 canonical 列表 = [cap-read-pdf, cap-read-docx, cap-read-xlsx]
+    （即同一个 absorbs 来源可以被多个 canonical 同时吸收 ——
+    expand 模式，下面输出格式有说明）。
+
+⚠️ **不要为了减少列数硬合并**：
+  - cap-write-png 和 cap-write-jpg 是两件事，不要合到 cap-write-image。
+  - cap-read-html 和 cap-read-markdown 是两件事，不要合。
+  - cap-infer-translation 和 cap-infer-summary 完全不是一回事。
+
+⚠️ **保守优先**：拿不准就不合，留两条独立列比错误合并更好。
+
+============================================================
+输出格式（只输出 JSON，禁止围栏与说明）
+============================================================
+
+两种合并模式：
+
+模式 1 —— 单 canonical 吸收：
+{
+  "canonical_id": "cap-read-pdf",
+  "absorbs": ["cap-read-pdf-document"],
+  "mode": "absorb",
+  "rationale": "Both are READ from PDF with same input/output shape; cap-read-pdf is more conventional."
+}
+
+模式 2 —— 笼统 id 拆到多个 specific：
+{
+  "canonical_id": null,
+  "absorbs": ["cap-read-document"],
+  "mode": "expand",
+  "expand_to": ["cap-read-pdf", "cap-read-docx", "cap-read-xlsx"],
+  "rationale": "cap-read-document is the umbrella READ over multiple modalities; the skill that emitted it actually supports each of these specifics."
+}
+
+  - mode=absorb：absorbs 中所有 id 的 skill_ids 全部并到 canonical_id 上，absorbs 列被删除。
+  - mode=expand：absorbs 中每个 id 的 skill_ids 复制到 expand_to 列出的每个目标列，原列删除。
+    expand_to 中的每个目标 id **必须在输入 capabilities 列表中已经存在**（不许凭空造）。
+
+整体输出：
+{
+  "merges": [ { ... }, { ... } ]
+}
+
+如果没有任何可合并的，输出 `{"merges": []}`。
+
+============================================================
+硬性规则
+============================================================
+
+- absorbs 中的每个 id **必须在输入 capabilities 中存在**。
+- canonical_id（mode=absorb）和 expand_to 中的每个 id **必须在输入 capabilities 中存在**。
+- 同一个 absorbs id 不能在多个 merges 里都出现（一次性消耗）。
+- 一个 canonical_id 可以在 mode=absorb 中出现多次（吸收多个别名）。
+- mode=absorb 时，absorbs 不能包含 canonical_id 自己。
+- 不允许跨 kind 合并。
+
+============================================================
+输入
+============================================================
+
+用户 query：
+$query
+
+merged_capabilities（每条带 id / kind / name / description / input_shape / output_shape / skill_ids）：
+
+$capabilities_payload

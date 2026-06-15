@@ -1,0 +1,9 @@
+{
+  "content": "# 报告 Title\n\n这是一个简短的 Markdown 文件，用于测试读取能力。\n\n## 小节 A\n- 项目 1\n- 项目 2\n\n## 小节 B\n正文内容：café 100%。\n",
+  "line_count": 10,
+  "headings": [
+    "报告 Title",
+    "小节 A",
+    "小节 B"
+  ]
+}

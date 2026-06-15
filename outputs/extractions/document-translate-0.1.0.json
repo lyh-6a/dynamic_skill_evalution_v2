@@ -1,0 +1,379 @@
+{
+  "schema_version": "skill-extractor-v1",
+  "skill_id": "document-translate-0.1.0",
+  "source_path": "/home/liuyuhan/dynamic_skill_evalution/doc_skills/document-translate-0.1.0/SKILL.md",
+  "scheduling": {
+    "skill_name": "doc-translate",
+    "skill_goal": "Translate and localize Office documents (PPTX/DOCX/PDF/XLSX) while preserving original templates and formatting.",
+    "tags": [
+      "translation",
+      "localization",
+      "office-documents",
+      "pptx",
+      "docx",
+      "xlsx",
+      "pdf"
+    ],
+    "expected_inputs": [
+      "pptx",
+      "docx",
+      "xlsx",
+      "pdf"
+    ],
+    "expected_outputs": [
+      "pptx",
+      "docx",
+      "xlsx",
+      "pdf"
+    ],
+    "dependencies": [
+      "python3",
+      "pdfplumber",
+      "python-docx",
+      "LibreOffice",
+      "pypdf2"
+    ]
+  },
+  "capability_candidates": [
+    {
+      "capability_id": "translate-pptx",
+      "name": "Translate PPTX document",
+      "description": "Translate a PPTX presentation's text content while preserving original templates and styles by editing XML text nodes.",
+      "matched_terms": [
+        "PPTX 翻译 / PPTX Translation",
+        "pptx_translate.py",
+        "PPTX全文翻译 / Full PPTX translation",
+        "保持原模板不变"
+      ],
+      "inputs": [
+        "pptx"
+      ],
+      "outputs": [
+        "pptx"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "src_lang",
+          "values": [
+            "en"
+          ],
+          "default": "en"
+        },
+        {
+          "axis": "tgt_lang",
+          "values": [
+            "zh"
+          ],
+          "default": "zh"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "Input file is a valid PPTX (ZIP archive containing ppt/slides/*.xml)",
+          "source": "explicit",
+          "evidence": "SKILL.md:33"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output .pptx file exists at specified --output path",
+            "source": "explicit",
+            "evidence": "SKILL.md:50"
+          },
+          {
+            "text": "Output PPTX retains original template/style structure (theme, content types)",
+            "source": "explicit",
+            "evidence": "SKILL.md:10"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Text content in <a:t> nodes is translated from source to target language",
+            "source": "explicit",
+            "evidence": "SKILL.md:42"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Medical/technical terms freely translated by AI instead of using manual mapping table",
+          "source": "explicit",
+          "evidence": "SKILL.md:159"
+        },
+        {
+          "text": "Trademarks/brand names (e.g. Medtronic, Harmonic) get translated instead of being kept original",
+          "source": "explicit",
+          "evidence": "SKILL.md:160"
+        },
+        {
+          "text": "Numbers+units (e.g. 7mm, 150 procedures) altered instead of kept as-is",
+          "source": "explicit",
+          "evidence": "SKILL.md:161"
+        },
+        {
+          "text": "Footnote symbols († ‡ § Ω) modified instead of preserved",
+          "source": "explicit",
+          "evidence": "SKILL.md:162"
+        },
+        {
+          "text": "Format placeholders like {name}, %s get replaced",
+          "source": "explicit",
+          "evidence": "SKILL.md:163"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "translate-docx",
+      "name": "Translate DOCX document",
+      "description": "Translate a DOCX Word document's text content while preserving original styles by editing XML text nodes in word/document.xml.",
+      "matched_terms": [
+        "DOCX 翻译 / DOCX Translation",
+        "docx_translate.py",
+        "DOCX全文翻译 / Full DOCX translation"
+      ],
+      "inputs": [
+        "docx"
+      ],
+      "outputs": [
+        "docx"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is a valid DOCX (ZIP archive containing word/document.xml)",
+          "source": "explicit",
+          "evidence": "SKILL.md:59"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output .docx file exists at specified --output path",
+            "source": "explicit",
+            "evidence": "SKILL.md:75"
+          },
+          {
+            "text": "Output DOCX retains original styles (word/styles.xml preserved)",
+            "source": "explicit",
+            "evidence": "SKILL.md:61"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Text content in <w:t> nodes is translated to target language",
+            "source": "explicit",
+            "evidence": "SKILL.md:68"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Medical/technical terms freely translated instead of using manual mapping table",
+          "source": "explicit",
+          "evidence": "SKILL.md:159"
+        },
+        {
+          "text": "Trademarks/brand names translated instead of preserved",
+          "source": "explicit",
+          "evidence": "SKILL.md:160"
+        },
+        {
+          "text": "Numbers+units altered instead of kept as-is",
+          "source": "explicit",
+          "evidence": "SKILL.md:161"
+        },
+        {
+          "text": "Footnote symbols modified instead of preserved",
+          "source": "explicit",
+          "evidence": "SKILL.md:162"
+        },
+        {
+          "text": "Format placeholders like {name}, %s get replaced",
+          "source": "explicit",
+          "evidence": "SKILL.md:163"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "translate-xlsx",
+      "name": "Translate XLSX spreadsheet",
+      "description": "Translate an XLSX spreadsheet's cell text content while preserving original styles by editing the shared strings table.",
+      "matched_terms": [
+        "XLSX 翻译 / XLSX Translation",
+        "xlsx_translate.py",
+        "XLSX全文翻译 / Full XLSX translation"
+      ],
+      "inputs": [
+        "xlsx"
+      ],
+      "outputs": [
+        "xlsx"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "Input file is a valid XLSX (ZIP archive containing xl/worksheets and xl/sharedStrings.xml)",
+          "source": "explicit",
+          "evidence": "SKILL.md:84"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output .xlsx file exists at specified --output path",
+            "source": "explicit",
+            "evidence": "SKILL.md:92"
+          },
+          {
+            "text": "Output XLSX retains original styles (xl/styles.xml preserved)",
+            "source": "explicit",
+            "evidence": "SKILL.md:87"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Cell text from sharedStrings.xml is translated to target language",
+            "source": "explicit",
+            "evidence": "SKILL.md:86"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Medical/technical terms freely translated instead of using manual mapping table",
+          "source": "explicit",
+          "evidence": "SKILL.md:159"
+        },
+        {
+          "text": "Trademarks/brand names translated instead of preserved",
+          "source": "explicit",
+          "evidence": "SKILL.md:160"
+        },
+        {
+          "text": "Numbers+units altered instead of kept as-is",
+          "source": "explicit",
+          "evidence": "SKILL.md:161"
+        },
+        {
+          "text": "Format placeholders like {name}, %s get replaced",
+          "source": "explicit",
+          "evidence": "SKILL.md:163"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "translate-pdf",
+      "name": "Translate PDF document",
+      "description": "Translate a PDF's text content by extracting with pdfplumber and rebuilding via Word→PDF (Method A) or direct overlay for text-layer PDFs (Method B).",
+      "matched_terms": [
+        "PDF 翻译 / PDF Translation",
+        "pdf_translate.py",
+        "PDF全文翻译 / Full PDF translation",
+        "PDF → Word → PDF",
+        "直接覆盖（仅文本层PDF）"
+      ],
+      "inputs": [
+        "pdf"
+      ],
+      "outputs": [
+        "pdf"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM",
+        "WRITE"
+      ],
+      "variation_axes": [
+        {
+          "axis": "method",
+          "values": [
+            "word",
+            "direct"
+          ],
+          "default": "word"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "When --method direct is used, the PDF must be a text-layer PDF",
+          "source": "explicit",
+          "evidence": "SKILL.md:109"
+        },
+        {
+          "text": "Method A requires pdfplumber, python-docx, and LibreOffice",
+          "source": "explicit",
+          "evidence": "SKILL.md:105"
+        },
+        {
+          "text": "Method B requires pdfplumber and pypdf2",
+          "source": "explicit",
+          "evidence": "SKILL.md:110"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "Output .pdf file exists at specified --output path",
+            "source": "explicit",
+            "evidence": "SKILL.md:115"
+          }
+        ],
+        "semantic": [
+          {
+            "text": "Extracted PDF text is translated to target language in the output PDF",
+            "source": "explicit",
+            "evidence": "SKILL.md:174"
+          }
+        ]
+      },
+      "common_failure_modes": [
+        {
+          "text": "Using --method direct on a non-text-layer PDF (only text-layer PDFs supported)",
+          "source": "explicit",
+          "evidence": "SKILL.md:109"
+        },
+        {
+          "text": "Medical/technical terms freely translated instead of using manual mapping table",
+          "source": "explicit",
+          "evidence": "SKILL.md:159"
+        },
+        {
+          "text": "Trademarks/brand names translated instead of preserved",
+          "source": "explicit",
+          "evidence": "SKILL.md:160"
+        },
+        {
+          "text": "Numbers+units altered instead of kept as-is",
+          "source": "explicit",
+          "evidence": "SKILL.md:161"
+        }
+      ],
+      "level": "fine"
+    }
+  ],
+  "extractor_meta": {
+    "schema_version": "skill-extractor-v1",
+    "backend": "anthropic",
+    "model": "glm-5.1",
+    "usage_tokens": 7879
+  }
+}

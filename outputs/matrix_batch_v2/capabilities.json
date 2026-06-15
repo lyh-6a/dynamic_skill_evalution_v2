@@ -1,0 +1,329 @@
+{
+  "capabilities": [
+    {
+      "id": "cap-read-docx",
+      "name": "Read DOCX",
+      "description": "Read a DOCX file's paragraph text and embedded images.",
+      "input_shape": "A .docx file.",
+      "output_shape": "Paragraph text and image binary content.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "ordering",
+        "node_locality",
+        "structure_capture",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "docx-compare-1.0.2",
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-read-html",
+      "name": "Read HTML body text",
+      "description": "Extract the main body text from an HTML/HTM file.",
+      "input_shape": "An .html/.htm file path.",
+      "output_shape": "Plain text of the body content.",
+      "judgement_dimensions": [
+        "main_content_focus",
+        "noise_removal",
+        "completeness",
+        "correctness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-read-image",
+      "name": "Read image document",
+      "description": "Read an image of a document (photo, scan, screenshot) and obtain its visible content.",
+      "input_shape": "An image file (png/jpg/screenshot) of a document.",
+      "output_shape": "Visible text and visual structure observed in the image.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "ocr_accuracy"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-json",
+      "name": "Read JSON file",
+      "description": "Read a JSON file from disk and parse its contents.",
+      "input_shape": "A .json file path.",
+      "output_shape": "Parsed JSON value (records/objects).",
+      "judgement_dimensions": [
+        "correctness",
+        "schema_fidelity"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-markdown",
+      "name": "Read Markdown",
+      "description": "Read a Markdown file.",
+      "input_shape": "A .md file path.",
+      "output_shape": "Markdown source text/AST.",
+      "judgement_dimensions": [
+        "fidelity",
+        "correctness",
+        "completeness",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1",
+        "document-reader-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-odt",
+      "name": "Read ODT",
+      "description": "Read text content from an OpenDocument Text file.",
+      "input_shape": "An .odt file path.",
+      "output_shape": "Plain text content.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-pdf",
+      "name": "Read PDF",
+      "description": "Read a PDF document and obtain its text and structural content.",
+      "input_shape": "A .pdf file (native or scanned).",
+      "output_shape": "Text content and structure of the PDF.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "reading_order",
+        "layout_preservation",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-pptx",
+      "name": "Read PPTX",
+      "description": "Read a PowerPoint file and produce per-slide content.",
+      "input_shape": "A .pptx file path.",
+      "output_shape": "Per-slide text content.",
+      "judgement_dimensions": [
+        "slide_separation",
+        "completeness",
+        "node_locality",
+        "correctness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-rtf",
+      "name": "Read RTF",
+      "description": "Read text content from a Rich Text Format file.",
+      "input_shape": "A .rtf file path.",
+      "output_shape": "Plain text content.",
+      "judgement_dimensions": [
+        "correctness",
+        "completeness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-read-xlsx",
+      "name": "Read XLSX",
+      "description": "Read an Excel workbook and produce per-sheet table content.",
+      "input_shape": "A .xlsx file path.",
+      "output_shape": "Per-sheet table text or structured data.",
+      "judgement_dimensions": [
+        "sheet_separation",
+        "value_preservation",
+        "completeness",
+        "correctness",
+        "fidelity",
+        "encoding_robustness"
+      ],
+      "skill_ids": [
+        "document-reader-1.0.0",
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0",
+        "doc-process-4.1.1"
+      ]
+    },
+    {
+      "id": "cap-transform-tabular-to-json",
+      "name": "Convert tabular data to JSON",
+      "description": "Map rows of tabular data into a JSON object/array structure.",
+      "input_shape": "Tabular rows/columns.",
+      "output_shape": "JSON value preserving values per row.",
+      "judgement_dimensions": [
+        "structure_fidelity",
+        "value_preservation"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-reader-1.0.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-json",
+      "name": "Write JSON file",
+      "description": "Serialize structured data into a JSON file.",
+      "input_shape": "Structured data (objects/arrays) and target path.",
+      "output_shape": "A .json file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "schema_fidelity"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-markdown",
+      "name": "Write Markdown file",
+      "description": "Write structured content into a Markdown file.",
+      "input_shape": "Structured content with headings, tables, lists.",
+      "output_shape": "A .md file.",
+      "judgement_dimensions": [
+        "structural_correctness",
+        "readability"
+      ],
+      "skill_ids": [
+        "doc-process-4.1.1",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-pdf",
+      "name": "Write PDF",
+      "description": "Produce a PDF output containing translated text via Word→PDF rebuild or direct overlay.",
+      "input_shape": "Translated text plus source layout (or interim DOCX).",
+      "output_shape": "A .pdf file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "layout_preservation",
+        "page_order"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    },
+    {
+      "id": "cap-write-xlsx",
+      "name": "Write XLSX",
+      "description": "Write back an XLSX archive with translated shared strings.",
+      "input_shape": "Original XLSX structure plus translated shared strings.",
+      "output_shape": "A .xlsx file at the target path.",
+      "judgement_dimensions": [
+        "validity",
+        "structure_integrity",
+        "structure_fidelity"
+      ],
+      "skill_ids": [
+        "document-translate-0.1.0",
+        "document-format-converter-1.0.0"
+      ]
+    }
+  ],
+  "skill_capability_map": {
+    "document-reader-1.0.0": [
+      "cap-read-docx",
+      "cap-read-html",
+      "cap-read-markdown",
+      "cap-read-odt",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-rtf",
+      "cap-read-xlsx",
+      "cap-transform-tabular-to-json"
+    ],
+    "document-format-converter-1.0.0": [
+      "cap-read-docx",
+      "cap-read-html",
+      "cap-read-image",
+      "cap-read-json",
+      "cap-read-markdown",
+      "cap-read-odt",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-rtf",
+      "cap-read-xlsx",
+      "cap-transform-tabular-to-json",
+      "cap-write-json",
+      "cap-write-markdown",
+      "cap-write-pdf",
+      "cap-write-xlsx"
+    ],
+    "docx-compare-1.0.2": [
+      "cap-read-docx"
+    ],
+    "document-translate-0.1.0": [
+      "cap-read-docx",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-xlsx",
+      "cap-write-pdf",
+      "cap-write-xlsx"
+    ],
+    "doc-process-4.1.1": [
+      "cap-read-docx",
+      "cap-read-html",
+      "cap-read-image",
+      "cap-read-json",
+      "cap-read-markdown",
+      "cap-read-odt",
+      "cap-read-pdf",
+      "cap-read-pptx",
+      "cap-read-rtf",
+      "cap-read-xlsx",
+      "cap-transform-tabular-to-json",
+      "cap-write-json",
+      "cap-write-markdown"
+    ]
+  }
+}

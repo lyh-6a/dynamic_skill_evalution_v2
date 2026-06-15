@@ -1,0 +1,566 @@
+{
+  "schema_version": "skill-extractor-v1",
+  "skill_id": "document-reader-1.0.0",
+  "source_path": "/home/liuyuhan/dynamic_skill_evalution/doc_skills/document-reader-1.0.0/SKILL.md",
+  "scheduling": {
+    "skill_name": "Document Reader",
+    "skill_goal": "读取各种格式文档的内容，直接输出文本供 AI 分析，支持压缩包内文档直接读取",
+    "tags": [
+      "document",
+      "reader",
+      "extraction",
+      "archive"
+    ],
+    "expected_inputs": [
+      "pdf",
+      "docx",
+      "xlsx",
+      "pptx",
+      "rtf",
+      "odt",
+      "html",
+      "txt",
+      "zip",
+      "tar",
+      "rar",
+      "7z"
+    ],
+    "expected_outputs": [
+      "text",
+      "json"
+    ],
+    "dependencies": [
+      "textract",
+      "python-docx",
+      "openpyxl",
+      "python-pptx",
+      "rarfile",
+      "py7zr",
+      "poppler-utils",
+      "antiword",
+      "unrtf",
+      "tidy",
+      "libxml2-dev",
+      "libxslt1-dev"
+    ]
+  },
+  "capability_candidates": [
+    {
+      "capability_id": "read-pdf-text",
+      "name": "Read PDF document text",
+      "description": "Extract text content from a PDF file using poppler-utils.",
+      "matched_terms": [
+        "PDF | `.pdf` | 支持文本提取，依赖 poppler-utils"
+      ],
+      "inputs": [
+        "pdf"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "format",
+          "values": [
+            "text",
+            "json"
+          ],
+          "default": "text"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "poppler-utils 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:16"
+        },
+        {
+          "text": "提供 --file 指向本地 PDF 文件",
+          "source": "explicit",
+          "evidence": "SKILL.md:53"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出包含从 PDF 提取的文本内容",
+            "source": "explicit",
+            "evidence": "SKILL.md:16"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-docx-text",
+      "name": "Read DOCX document text",
+      "description": "Completely extract all paragraph text from a Microsoft Word .docx file.",
+      "matched_terms": [
+        "Microsoft Word | `.docx` | 完整提取所有段落文本"
+      ],
+      "inputs": [
+        "docx"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "format",
+          "values": [
+            "text",
+            "json"
+          ],
+          "default": "text"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "python-docx 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:39"
+        },
+        {
+          "text": "提供 --file 指向本地 DOCX 文件",
+          "source": "explicit",
+          "evidence": "SKILL.md:56"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出包含 DOCX 文件的所有段落文本",
+            "source": "explicit",
+            "evidence": "SKILL.md:17"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-xlsx-sheets",
+      "name": "Read XLSX as per-Sheet table text",
+      "description": "Read an Excel .xlsx file and output each sheet as table text, separated by sheet.",
+      "matched_terms": [
+        "按 Sheet 输出，每个 Sheet 输出为表格文本",
+        "输出带 Sheet 分隔的表格文本"
+      ],
+      "inputs": [
+        "xlsx"
+      ],
+      "outputs": [
+        "text",
+        "json"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "format",
+          "values": [
+            "text",
+            "json"
+          ],
+          "default": "text"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "openpyxl 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:39"
+        },
+        {
+          "text": "提供 --file 指向本地 XLSX 文件",
+          "source": "explicit",
+          "evidence": "SKILL.md:59"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出按 Sheet 分块，每个 Sheet 为表格文本",
+            "source": "explicit",
+            "evidence": "SKILL.md:18"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-pptx-slides",
+      "name": "Read PPTX content by slide",
+      "description": "Read a PowerPoint .pptx file and output content chunked by slide.",
+      "matched_terms": [
+        "Microsoft PowerPoint | `.pptx` | 按 Slide 分块输出"
+      ],
+      "inputs": [
+        "pptx"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "format",
+          "values": [
+            "text",
+            "json"
+          ],
+          "default": "text"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "python-pptx 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:39"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出按 Slide 分块",
+            "source": "explicit",
+            "evidence": "SKILL.md:19"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-rtf-text",
+      "name": "Read RTF document text",
+      "description": "Read text content from a Rich Text Format (.rtf) file.",
+      "matched_terms": [
+        "Rich Text Format | `.rtf`"
+      ],
+      "inputs": [
+        "rtf"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "unrtf 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:44"
+        }
+      ],
+      "success_criteria": {
+        "structural": [],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-odt-text",
+      "name": "Read ODT document text",
+      "description": "Read text content from an OpenDocument Text (.odt) file.",
+      "matched_terms": [
+        "OpenDocument Text | `.odt`"
+      ],
+      "inputs": [
+        "odt"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [],
+      "preconditions": [],
+      "success_criteria": {
+        "structural": [],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-html-body-text",
+      "name": "Read HTML body text",
+      "description": "Extract the body/main text from an HTML or HTM file.",
+      "matched_terms": [
+        "HTML | `.html`/`.htm` | 提取正文文本"
+      ],
+      "inputs": [
+        "html"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "tidy / libxml2 / libxslt 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:44"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出为 HTML 的正文文本",
+            "source": "explicit",
+            "evidence": "SKILL.md:22"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-plain-text",
+      "name": "Read plain text file",
+      "description": "Directly read plain-text files such as .txt/.md/.json/.xml/.py/.js.",
+      "matched_terms": [
+        "纯文本 | `.txt`/`.md`/`.json`/`.xml`/`.py`/`.js` 等 | 直接读取"
+      ],
+      "inputs": [
+        "txt",
+        "md",
+        "json",
+        "xml",
+        "py",
+        "js"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ"
+      ],
+      "variation_axes": [],
+      "preconditions": [],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出为文件的原始文本内容",
+            "source": "explicit",
+            "evidence": "SKILL.md:23"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "list-archive-contents",
+      "name": "List files inside an archive",
+      "description": "List the files contained inside a ZIP/TAR/RAR/7z archive without extracting it.",
+      "matched_terms": [
+        "列出文件 ➜ 读取指定文档",
+        "先列出压缩包里有哪些文件",
+        "Found 3 file(s)"
+      ],
+      "inputs": [
+        "zip",
+        "tar",
+        "rar",
+        "7z"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "READ"
+      ],
+      "variation_axes": [
+        {
+          "axis": "archive_format",
+          "values": [
+            "zip",
+            "tar",
+            "rar",
+            "7z"
+          ],
+          "default": "zip"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "调用时使用 --list 参数指向压缩包",
+          "source": "explicit",
+          "evidence": "SKILL.md:70"
+        },
+        {
+          "text": "对应解压库 (rarfile, py7zr) 已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:39"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出列出压缩包内的所有文件路径",
+            "source": "explicit",
+            "evidence": "SKILL.md:108"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    },
+    {
+      "capability_id": "read-document-inside-archive",
+      "name": "Read a document inside an archive",
+      "description": "Read a specified inner document from a ZIP/TAR/RAR/7z archive directly, without manual extraction.",
+      "matched_terms": [
+        "读取压缩包里的指定文档",
+        "--inner-path",
+        "支持压缩包内文档直接读取，无需手动解压"
+      ],
+      "inputs": [
+        "zip",
+        "tar",
+        "rar",
+        "7z"
+      ],
+      "outputs": [
+        "text",
+        "json"
+      ],
+      "actions": [
+        "READ",
+        "TRANSFORM"
+      ],
+      "variation_axes": [
+        {
+          "axis": "archive_format",
+          "values": [
+            "zip",
+            "tar",
+            "rar",
+            "7z"
+          ],
+          "default": "zip"
+        },
+        {
+          "axis": "format",
+          "values": [
+            "text",
+            "json"
+          ],
+          "default": "text"
+        }
+      ],
+      "preconditions": [
+        {
+          "text": "调用时使用 --file 指向压缩包并指定 --inner-path",
+          "source": "explicit",
+          "evidence": "SKILL.md:82"
+        },
+        {
+          "text": "对应解压库 (rarfile, py7zr) 及内部文件类型对应的读取依赖已安装",
+          "source": "explicit",
+          "evidence": "SKILL.md:39"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "输出为 --inner-path 指定文档的文本内容",
+            "source": "explicit",
+            "evidence": "SKILL.md:85"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [
+        {
+          "text": "找不到精确匹配文件名时自动尝试大小写不敏感的模糊匹配",
+          "source": "explicit",
+          "evidence": "SKILL.md:119"
+        }
+      ],
+      "level": "fine"
+    },
+    {
+      "capability_id": "fuzzy-inner-filename-match",
+      "name": "Case-insensitive fuzzy filename matching inside archive",
+      "description": "When exact inner filename is not found, perform case-insensitive fuzzy matching to locate the document.",
+      "matched_terms": [
+        "模糊匹配",
+        "大小写不敏感匹配文件名，找不到精确匹配时自动尝试"
+      ],
+      "inputs": [
+        "zip",
+        "tar",
+        "rar",
+        "7z"
+      ],
+      "outputs": [
+        "text"
+      ],
+      "actions": [
+        "SELECT",
+        "READ"
+      ],
+      "variation_axes": [],
+      "preconditions": [
+        {
+          "text": "调用时使用 --file 指向压缩包并指定 --inner-path",
+          "source": "explicit",
+          "evidence": "SKILL.md:82"
+        }
+      ],
+      "success_criteria": {
+        "structural": [
+          {
+            "text": "在 --inner-path 与压缩包内文件名大小写不一致时仍能读取到对应文件内容",
+            "source": "explicit",
+            "evidence": "SKILL.md:119"
+          }
+        ],
+        "semantic": []
+      },
+      "common_failure_modes": [],
+      "level": "fine"
+    }
+  ],
+  "extractor_meta": {
+    "schema_version": "skill-extractor-v1",
+    "backend": "anthropic",
+    "model": "glm-5.1",
+    "usage_tokens": 7293
+  }
+}

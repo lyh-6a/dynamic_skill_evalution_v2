@@ -1,0 +1,91 @@
+你正在为一组 skill 做**通用能力轴聚类**，目标是把这批 skill 的 capability_candidates
+**聚合成一组通用、互相正交的能力**（capability axes），每个能力就是评测矩阵的一列。
+
+**和差异分析的根本区别**：
+  - 差异分析（discriminator）找的是"这几个 skill 之间不一样的地方"。
+  - 这里要找的是"这些 skill 各自/共同支持的**通用能力维度**"，描述能力本身，
+    **不**描述谁强谁弱、不出现"A 比 B 更…"这类比较。
+  - 如果两个 skill 都有"读 PDF 文本"，那就是**同一个**能力，不是差异。
+
+============================================================
+输入信号
+============================================================
+
+每个 skill 的 capability_candidates 里包含：
+  - inputs / outputs / actions   —— 能力的 I/O 形状
+  - description                  —— 能力的自然语言描述
+  - success_criteria             —— 这个能力如何算做成功
+  - variation_axes               —— 这个能力支持哪些参数变体（不是用来分轴的，是用来判 I/O 形状的）
+
+============================================================
+聚类规则
+============================================================
+
+1. **通用、不绑定具体 skill**：
+   每个 capability 的 description / input_shape / output_shape **只描述能力本身**，
+   不出现任何 skill_id，不出现"该 skill 能/不能…"。
+   反例：❌ "document-reader 比其它 skill 多一个 OCR 选项"
+   正例：✅ "Extract plain text from native-text PDF"
+
+2. **目标数量**：3 ~ 8 条；优先 5 条左右。
+   太多说明你在切太细（例如把"读取 PDF" 拆成"读取 1 页 PDF"和"读取多页 PDF"）。
+   太少说明你在过度合并（例如把"读取" 和"翻译"合并成"document processing"）。
+
+3. **正交**：
+   两个 capability 不应在 input_shape + output_shape + actions 上完全重合。
+   如果两个候选轴的 I/O 都是 PDF→text，合成一个。
+
+4. **覆盖**：
+   每个 capability **至少有一个** skill 声称能做（skill_ids 非空）。
+   不要造出没人做的能力。
+
+5. **同一个 skill 可以同时声称多个 capability**：
+   如果某个 skill 的 capability_candidates 里既有读、又有翻译、又有写，
+   那它在 skill_ids 里要在三条 capability 上都出现。这是预期行为。
+
+6. **判定 skill 是否声称某 capability** 的规则：
+   翻 skill 的 capability_candidates，看其中任一 candidate 的 inputs/outputs/actions/description
+   是否覆盖该 capability 的 input_shape/output_shape/actions。
+   只要有一个 candidate 命中就算声称。模棱两可时**不**写进去 —— 宁可空也不要凑。
+
+7. **judgement_dimensions** 列出 2~5 个高层判分维度（如 "correctness", "fidelity",
+   "format_preservation", "robustness"），不要写到具体 assert 级别 —— 那是出题阶段的事。
+
+============================================================
+输出格式（只输出 JSON，禁止围栏与任何说明文字）
+============================================================
+
+{
+  "capabilities": [
+    {
+      "id": "cap-read-pdf-text",                      // kebab-case, 唯一, 以 "cap-" 开头
+      "name": "Read native-text PDF",                  // 短人类可读名
+      "description": "Extract plain reading-order text from a PDF whose pages contain a real text layer.",
+      "input_shape": "A single .pdf file with embedded text (no OCR required).",
+      "output_shape": "A UTF-8 string (or JSON with a 'text' field) containing the extracted text in reading order.",
+      "judgement_dimensions": ["correctness", "completeness", "reading_order"],
+      "skill_ids": ["document-reader-1.0.0", "document-translate-0.1.0"]
+    }
+  ]
+}
+
+============================================================
+硬性规则
+============================================================
+
+- 每条 capability 的 skill_ids 中的每一个 id 必须在输入 skill 列表里出现过；不许编造。
+- 每条 capability 的 description / input_shape / output_shape 不能包含任何 skill_id。
+- 不输出 skill_capability_map（下游会从 skill_ids 反推）。
+- 不输出 discriminators / 差异类语言。
+- 只输出上面那个 JSON。
+
+============================================================
+输入
+============================================================
+
+用户 query：
+$query
+
+skill_extractor 产物（每个 skill 的 scheduling + capability_candidates）：
+
+$skills_payload

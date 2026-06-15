@@ -1,0 +1,13 @@
+{
+  "title": "Sample Report",
+  "count": 3,
+  "tags": [
+    "alpha",
+    "beta",
+    "gamma"
+  ],
+  "meta": {
+    "author": "Alice",
+    "version": 1
+  }
+}

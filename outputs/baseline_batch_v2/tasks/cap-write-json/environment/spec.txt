@@ -1,0 +1,7 @@
+Write a JSON file to /root/result.json with this exact content:
+{
+  "title": "Sample Report",
+  "count": 3,
+  "tags": ["alpha", "beta", "gamma"],
+  "meta": {"author": "Alice", "version": 1}
+}

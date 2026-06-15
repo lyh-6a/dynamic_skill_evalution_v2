@@ -1,0 +1,58 @@
+Extract a SkillExtraction object from the SKILL.md below.
+
+source_path: $source_path
+skill_id:    $skill_id
+
+Return strict JSON with this exact shape (and no extra keys at the top level):
+
+{
+  "skill_id": "$skill_id",
+  "scheduling": {
+    "skill_name":       "short human-readable name",
+    "skill_goal":       "one sentence, source-grounded",
+    "tags":             ["..."],
+    "expected_inputs":  ["pdf", "image", ...],
+    "expected_outputs": ["..."],
+    "dependencies":     ["tools/libraries/CLIs explicitly mentioned"]
+  },
+  "capability_candidates": [
+    {
+      "capability_id":   "kebab-case-id",
+      "name":            "Human readable name",
+      "description":     "1-2 sentences, source-grounded",
+      "matched_terms":   ["literal phrases from SKILL.md"],
+      "inputs":          ["pdf"],
+      "outputs":         ["image"],
+      "actions":         ["READ", "TRANSFORM", "WRITE"],
+      "variation_axes": [
+        {"axis": "axis_name", "values": ["v1", "v2"], "default": "v1"}
+      ],
+      "preconditions": [
+        {"text": "...", "source": "explicit", "evidence": "SKILL.md:<line>"}
+      ],
+      "success_criteria": {
+        "structural": [
+          {"text": "machine-checkable judge", "source": "explicit", "evidence": "SKILL.md:<line>"}
+        ],
+        "semantic": [
+          {"text": "NL judge needing LLM-judge", "source": "explicit", "evidence": "SKILL.md:<line>"}
+        ]
+      },
+      "common_failure_modes": [
+        {"text": "...", "source": "explicit", "evidence": "SKILL.md:<line>"}
+      ],
+      "level": "fine"
+    }
+  ]
+}
+
+Reminders:
+- Every `"explicit"` Evidence MUST have an `evidence` pointer of the form `SKILL.md:<line>` referring to the numbered source below. Do not make up line numbers.
+- If a field has no source-grounded value, return an empty array `[]` for it. Do NOT invent generic content.
+- Do not include any keys other than those listed above.
+- Output a single JSON object. No prose, no markdown fences.
+
+SKILL.md (each line is prefixed with its line number; use those numbers when citing evidence):
+---
+$skill_text_numbered
+---

@@ -1,0 +1,171 @@
+你是一名跨技能评测的题目设计师。
+
+我会给你一个用户的评测意图（query）以及当前所有 skill 的能力清单（来自 skill_extractor）。
+请设计若干道**跨 skill 对比题**，每道题必须具备**自验证闭环**：
+你先给出结构化真值（ground_truth）→ 给出渲染脚本生成测试输入文件 → 给出参考解 solution_py
+读这些文件还原真值 → tests_py 在 solution 产物上断言。我们会在你的输出上跑一遍完整链路，
+跑不通的题直接丢弃，所以**每个脚本都要能真的跑**。
+
+============================================================
+你的核心目标：**出能区分 skill 的题**，不是出谁都能过的中位数题
+============================================================
+
+每个 skill 的 capability_candidates 里都带：
+  - variation_axes        —— 这个能力支持/不支持哪些参数维度（语言、格式、规模…）
+  - preconditions         —— 对输入的硬性假设（"必须是文本型 PDF"、"≤10MB"…）
+  - success_criteria      —— 这个 skill **认为**自己怎样算成功（保留格式？保留表格？语义一致？）
+  - common_failure_modes  —— 这个 skill **自己承认**容易翻车的场景
+
+出题时**必须先做差异分析**：在 query 划定的范围内，挑出 ≥2 个 skill 的能力，
+找它们在 axes / preconditions / success_criteria / common_failure_modes 上**不一样**的点，
+据此设计能让差异**真的暴露出来**的输入和断言。
+
+举例：
+  - skill A 说支持"扫描件 OCR"，skill B 说"仅文本 PDF" → 出"扫描件"的题，B 必败
+  - skill A 的 success_criteria 强调"保留表格结构"，skill B 不提 → 题面里塞表格，断言表格内容
+  - skill A 的 common_failure_modes 写"跨页表格丢失"→ 故意造跨页表格，看谁丢
+  - 所有 skill 都说能做 X，但 axes 不重叠 → 选**多个 skill 都覆盖**的子集出题
+    （这样大家都能下场，差异体现在结果上而不是能否运行）
+
+**写完题后，每道题里必须在 `task_toml_extras.tags` 里加一条 `discriminator:<差异点>`**
+（例如 `"discriminator:scanned-pdf"`、`"discriminator:cross-page-table"`），让人一眼看出
+"这道题是为了拉开**哪个**差距设计的"。如果你找不到差异点，**这道题就别出**，
+宁可这一轮一道题不返回，也不要返回一道谁都能过的题。
+
+ground_truth → solution → tests 的闭环保持不变；只是题面立意要换轨道。
+
+**关于依赖**：被评测的 skill 解题时用哪些库，由 runner 根据每个 skill 自带的
+SKILL.md / requirements / *.py 自动发现并写进 docker 镜像，**与本题目无关**。
+你出题时**不要**关心被评 agent 装了什么库；也**不要**指定/推荐参考解 solution_py
+该用哪个包 —— solution_py 跑在我们的校验环境里，环境已预装常见 PDF/数据处理库，
+你按需 `import` 即可（用不上的就别 import）。
+
+只输出 JSON（禁止 markdown 围栏与说明文字）：
+
+{
+  "tasks": [
+    {
+      "task_id": "kebab-case 全局唯一",
+      "name": "短名（中文/英文均可）",
+
+      // ----- 跨 skill 对比清单（出题的核心约束）-----
+      "candidate_solutions": [
+        {
+          "skill_id": "...",          // 必须来自 skill_extractor 的产物
+          "capability_id": "...",     // 必须是该 skill 内已有的 capability
+          "approach": "这个能力怎么解决此题；并点名它在哪个 axis / criterion / failure_mode 上**与其他候选不同**（这是这道题区分意义的核心）"
+        }
+        // 至少 2 个，且 skill_id 不同
+      ],
+
+      // ----- 给被评 agent 看的题面（祈使句，绝对路径 /root/...） -----
+      "instruction_md": "Read /root/receipt.pdf and ... Write /root/result.json with keys ...",
+
+      // ----- 结构化真值（你先想清楚答案，再据此造输入和写 solution）-----
+      "ground_truth": {
+        "merchant": "Walmart",
+        "currency": "USD",
+        "subtotal": 12.75, "tax": 1.02, "total": 13.77
+      },
+
+      // ----- 输出落点（solution 写到这里，tests 读这里）-----
+      "output_path": "/root/result.json",
+
+      // ----- 题目所需输入文件 -----
+      "assets": [
+        {
+          "path": "receipt.pdf",                // 相对 environment/
+          "container_path": "/root/receipt.pdf",
+          "kind": "binary",                     // "text" | "binary"
+          "renderer_py": "..."                  // kind=binary 时必填，见下文规则
+        },
+        {
+          "path": "hint.txt",
+          "container_path": "/root/hint.txt",
+          "kind": "text",
+          "content": "Free-form notes for the agent.\n"
+        }
+      ],
+
+      // ----- 参考解：依据 assets 还原 ground_truth，写到 output_path -----
+      "solution_py": "...",
+
+      // ----- 评测脚本（在 solution 输出上断言）-----
+      "tests_py": "import json, os\n\nclass TestOutputs:\n    def test_file(self):\n        assert os.path.exists('/root/result.json')\n    ...",
+
+      // ----- task.toml [metadata] 段允许覆盖的字段 -----
+      "task_toml_extras": {
+        "difficulty":  "easy | medium | hard",
+        "category":    "document-processing | data-conversion | translation | ...",
+        "subcategory": "可选",
+        "task_type":   ["extraction"],
+        "modality":    ["pdf", "json"],
+        "tags":        ["receipt", "pdf"]
+      }
+    }
+  ]
+}
+
+============================================================
+renderer_py（kind="binary"）规则 —— 在校验环境主机沙箱跑：
+============================================================
+
+- 完整可执行 Python 脚本，单独 `python script.py` 能跑。
+- 从环境变量读两个绝对路径：
+    GROUND_TRUTH_PATH  —— ground_truth.json 的路径，json.load 即可
+    OUTPUT_PATH        —— 必须把生成的二进制文件**写到这个路径**
+- 不要硬编码 `/root/...` 路径，**也不要假设当前目录**，一律用 OUTPUT_PATH。
+- 必须把 ground_truth 的所有关键字段都体现在生成的文件里
+  （比如金额必须真的画到 PDF 上、写到文档里），否则 solution 读不出来。
+- **PDF 文本布局陷阱**：渲染 PDF 时，若用两次 `drawString` 分别画「标签」和「右对齐数字」，
+  pdfminer/pypdf 抽出来的文本会把所有标签先列一起、所有数字后列一起，破坏「同行 regex」假设。
+  解决：把同一行的标签和数值拼成**一个字符串**再 `drawString`，例如
+  `c.drawString(20, y, f"Subtotal  {gt['subtotal']:>8.2f}")`，不要分两次调用。
+- 校验环境已预装常用的 PDF/图像/数据生成库，按需 import 即可。
+
+============================================================
+solution_py 规则：
+============================================================
+
+- 完整可执行 Python 脚本，`python solution.py` 直接产出 output_path。
+- **只能读 assets 文件**（路径里硬编码 /root/...），不许读 ground_truth.json。
+  我们在校验时把 /root/ 字面量替换到沙箱根目录，所以你照常写 /root/receipt.pdf。
+- 写出的 JSON 必须能让 tests_py 全部断言通过。
+- **只能用 Python 包**（stdlib 或校验环境已预装的库）。
+  禁止 `subprocess` 调外部二进制（pdftotext / tesseract / pandoc 等），运行环境不保证装了这些。
+- 写 regex 时小心标签前缀冲突：例如 `Subtotal` 会被 `Total` 误匹。
+  解决：用更严的锚定，例如 `re.search(r'(?:^|\n)\s*Total\s+([0-9.]+)', txt)`
+  或负向断言 `re.search(r'(?<!Sub)Total\s+([0-9.]+)', txt)`。
+- 若解析有误差，请在生成端就用够大的字号/清晰布局，让 solution 稳过。
+
+============================================================
+tests_py 规则（最重要）：
+============================================================
+
+- 只能 import 标准库（json / os / re / pathlib / decimal / math）—— 不要任何第三方包。
+- 必须先检查 output_path 文件存在。
+- 必须对真值的关键字段做断言；浮点用 `abs(a-b) < 1e-2` 之类的容差。
+- 5–10 条 assert 即可，过多会让真实 skill 难过线。
+- 路径写绝对 /root/...，校验器会替换；docker 内也是这个路径。
+
+============================================================
+全局硬性规则（违反则该题作废，不要尝试规避）：
+============================================================
+
+- candidate_solutions ≥ 2 且不同 skill；不允许编造不存在的 skill_id / capability_id。
+- **每道题必须有明确的差异点**：在 candidate_solutions 的 approach 字段里点名差异，
+  在 task_toml_extras.tags 里加 `discriminator:<key>`。出不来差异点的题**不要返回**。
+- ground_truth 必须能完全决定 tests_py 里所有期望值；不要让测试值在 ground_truth 里找不到来源。
+- 二进制 asset（pdf / png / xlsx / docx）必须配 renderer_py，不许写空内容假装。
+- 文本 asset 用 kind="text" 直接给 content；不要为了文本也写 renderer_py。
+- 文件路径 `path` 用相对 environment/ 的相对路径；container_path 必须是 /root/... 开头。
+- 不要在 JSON 里写 `solution_deps` 或 `renderer_deps`（这些字段已废弃）。
+- 用户 query 没覆盖到的方向不要凑数；宁可少出，也别强行配对。
+- 不输出除上述 JSON 之外的任何文字。
+
+用户 query：
+$query
+
+skill_extractor 产物（每个 skill 的 scheduling + capability_candidates）：
+
+$skills_payload
