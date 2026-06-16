@@ -5,41 +5,46 @@
 背景
 ============================================================
 
-上游已经把每个 skill 的 capability_candidates 拆成了原子操作（READ / WRITE / TRANSFORM /
-INFER / EXTRACT / PRESERVE / COMPARE / COMPOSE / VALIDATE），并按 id 求并集合并过一次。
-但是不同 skill 在 stage-1 的命名仍然有出入，比如：
-
-  - skill A 出了  cap-read-pdf
-  - skill B 出了  cap-read-document   ← 同一件事的笼统命名
-
-这俩描述的是**同一种能力**，应该合并。你的任务就是找到这种重复。
+上游已经按 stage 0 提出的 taxonomy 把每个 skill 的 capability_candidates 拆成了
+原子操作，并按 id 求并集合并过一次。但是不同 skill 在 stage-1 的命名仍然有出入，
+比如笼统的 cap-read-document 和具体的 cap-read-pdf 同时出现。
 
 ⚠️ 这一步**不**是再次聚类、**不**重新分类，**不**改 kind。
-只做一件事：当两个/多个原子描述同一件事时，挑一个最具体、信息量最大的 id 作为 canonical，
-其它 id 都变成它的别名（absorbs）。
+只做一件事：当两个/多个原子描述同一件事时，挑一个最具体、信息量最大的 id 作为
+canonical，其它 id 都变成它的别名（absorbs）。
 
+============================================================
+本次评测的 taxonomy（同 stage 1）
+============================================================
+
+domain：$domain
+
+允许的 kind（与 stage 1 完全一致）：
+
+$kinds_block
+
+$notes_block
 ============================================================
 合并判定规则
 ============================================================
 
 合并 A → 当且仅当所有以下条件**全部满足**：
-  1. **kind 完全一样**（READ 不能合并到 EXTRACT；TRANSFORM 不能合并到 INFER）。
-  2. input_shape 在概念上等价或一方更具体（例如 generic "document" 包含 specific "pdf"）。
+  1. **kind 完全一样**（cross-kind 合并永远不允许）。
+  2. input_shape 在概念上等价或一方更具体（例如 generic "document" 包含
+     specific "pdf"）。
   3. output_shape 在概念上等价或一方更具体。
   4. description 描述的是同一件事，不是相似但不同的事。
 
 合并选 canonical 的优先级：
   - 更具体 > 更笼统。 cap-read-pdf 优先于 cap-read-document。
-  - 更具体 > 更具体。 cap-read-pdf-native-text 优先于 cap-read-pdf。
-  - 一对多场景（cap-read-document 可以拆到 cap-read-pdf, cap-read-docx, cap-read-xlsx）：
-    把笼统 id 变成 canonical 列表 = [cap-read-pdf, cap-read-docx, cap-read-xlsx]
-    （即同一个 absorbs 来源可以被多个 canonical 同时吸收 ——
-    expand 模式，下面输出格式有说明）。
+  - 更具体 > 更具体。 含 qualifier 的 id 优先于不含的（仅当其他 id 是它的真子集）。
+  - 一对多场景（cap-read-document 可以拆到 cap-read-pdf, cap-read-docx,
+    cap-read-xlsx）：把笼统 id 变成 canonical 列表（expand 模式，下面输出格式有说明）。
 
 ⚠️ **不要为了减少列数硬合并**：
-  - cap-write-png 和 cap-write-jpg 是两件事，不要合到 cap-write-image。
-  - cap-read-html 和 cap-read-markdown 是两件事，不要合。
-  - cap-infer-translation 和 cap-infer-summary 完全不是一回事。
+  - 不同 modality 的写出能力是两件事，不要合到一个 cap-write-<umbrella>。
+  - 不同任务类型的 INFER（如翻译 vs 摘要 vs 分类）完全不是一回事。
+  - 同一 kind 下不同 modality 也不要硬合。
 
 ⚠️ **保守优先**：拿不准就不合，留两条独立列比错误合并更好。
 
@@ -51,19 +56,19 @@ INFER / EXTRACT / PRESERVE / COMPARE / COMPOSE / VALIDATE），并按 id 求并�
 
 模式 1 —— 单 canonical 吸收：
 {
-  "canonical_id": "cap-read-pdf",
-  "absorbs": ["cap-read-pdf-document"],
+  "canonical_id": "<更具体的 id>",
+  "absorbs": ["<更笼统的 id>"],
   "mode": "absorb",
-  "rationale": "Both are READ from PDF with same input/output shape; cap-read-pdf is more conventional."
+  "rationale": "<一句话解释为什么这两条是同一件事>"
 }
 
 模式 2 —— 笼统 id 拆到多个 specific：
 {
   "canonical_id": null,
-  "absorbs": ["cap-read-document"],
+  "absorbs": ["<笼统的 id>"],
   "mode": "expand",
-  "expand_to": ["cap-read-pdf", "cap-read-docx", "cap-read-xlsx"],
-  "rationale": "cap-read-document is the umbrella READ over multiple modalities; the skill that emitted it actually supports each of these specifics."
+  "expand_to": ["<具体 id 1>", "<具体 id 2>", "<具体 id 3>"],
+  "rationale": "<一句话解释笼统 id 实际覆盖了哪几个 specific>"
 }
 
   - mode=absorb：absorbs 中所有 id 的 skill_ids 全部并到 canonical_id 上，absorbs 列被删除。
@@ -95,6 +100,7 @@ INFER / EXTRACT / PRESERVE / COMPARE / COMPOSE / VALIDATE），并按 id 求并�
 用户 query：
 $query
 
-merged_capabilities（每条带 id / kind / name / description / input_shape / output_shape / skill_ids）：
+merged_capabilities（每条带 id / kind / name / description / input_shape /
+output_shape / skill_ids）：
 
 $capabilities_payload

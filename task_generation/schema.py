@@ -21,6 +21,80 @@ from typing import Any
 SCHEMA_VERSION = "task-generation-v2"
 
 
+# ----------------------------------------------------------- Taxonomy
+
+
+@dataclass
+class TaxonomyKind:
+    """One operation kind the LLM proposed for the current domain.
+
+    For a doc-skills run this might be ``READ`` / ``WRITE`` / ``TRANSFORM``;
+    for a draw-skills run it could be ``PLAN`` / ``RENDER`` / ``EDIT``. The
+    name is shouted-uppercase by convention and used directly as ``kind`` on
+    each atom produced in stage 1.
+    """
+
+    name: str
+    description: str = ""
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> "TaxonomyKind":
+        return cls(
+            name=str(value.get("name", "")).strip().upper(),
+            description=str(value.get("description", "")).strip(),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"name": self.name, "description": self.description}
+
+
+@dataclass
+class Taxonomy:
+    """Per-domain naming convention proposed by stage 0.
+
+    Captures the LLM's domain-specific decisions so stage 1 (decompose),
+    stage 2 (mechanical merge), and stage 3 (normalize) all agree on the
+    same operation kinds, the same modality namespace, and the same id
+    format. Persisted to ``taxonomy.json`` next to ``capabilities.json``.
+
+    Stage 0 uses ``few_shot`` to anchor the LLM in stages 1/3 — a couple of
+    canonical (id, kind, name) examples in the freshly-proposed taxonomy.
+    """
+
+    domain: str
+    kinds: list[TaxonomyKind] = field(default_factory=list)
+    modality_namespace: dict[str, Any] = field(default_factory=dict)
+    id_format: str = "cap-<kind-lowercase>-<primary-modality>[-<qualifier>]"
+    few_shot: list[dict[str, Any]] = field(default_factory=list)
+    notes: str = ""
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> "Taxonomy":
+        return cls(
+            domain=str(value.get("domain", "")).strip(),
+            kinds=[TaxonomyKind.from_dict(k) for k in (value.get("kinds") or [])],
+            modality_namespace=dict(value.get("modality_namespace") or {}),
+            id_format=str(value.get("id_format", "")).strip()
+            or "cap-<kind-lowercase>-<primary-modality>[-<qualifier>]",
+            few_shot=[dict(x) for x in (value.get("few_shot") or [])],
+            notes=str(value.get("notes", "")).strip(),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "domain": self.domain,
+            "kinds": [k.to_dict() for k in self.kinds],
+            "modality_namespace": dict(self.modality_namespace),
+            "id_format": self.id_format,
+            "few_shot": [dict(x) for x in self.few_shot],
+            "notes": self.notes,
+        }
+
+    @property
+    def kind_names(self) -> set[str]:
+        return {k.name for k in self.kinds}
+
+
 # ----------------------------------------------------------- Discriminator
 
 

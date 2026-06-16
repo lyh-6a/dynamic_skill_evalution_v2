@@ -32,6 +32,7 @@ from dynamic_skill_eval_v2.skill_extractor.extractor import load_extraction
 from dynamic_skill_eval_v2.task_generation.bundle_writer import TaskBundleWriter
 from dynamic_skill_eval_v2.task_generation.generator import TaskGenerator
 from dynamic_skill_eval_v2.task_generation.matrix_batch_builder import MatrixBatchBuilder
+from dynamic_skill_eval_v2.task_generation.schema import Taxonomy
 from dynamic_skill_eval_v2.task_generation.validator import TaskValidator
 
 
@@ -80,6 +81,23 @@ def main(argv: list[str] | None = None) -> int:
              "only for multi-skill (column-comparable) capabilities. The "
              "full unfiltered analysis is preserved at capabilities_full.json.",
     )
+    parser.add_argument(
+        "--domain",
+        type=str,
+        default=None,
+        help="Free-form name of the skill domain (e.g. 'document processing', "
+             "'code refactoring', 'image drawing'). Stage 0 uses this to "
+             "propose a per-domain capability taxonomy (kinds + modality "
+             "namespace + id format). Required unless --taxonomy is supplied.",
+    )
+    parser.add_argument(
+        "--taxonomy",
+        type=Path,
+        default=None,
+        help="Path to a previously-saved taxonomy.json. When set, stage 0 is "
+             "skipped and the supplied taxonomy is used verbatim. Use this to "
+             "lock the taxonomy across reruns of the same domain.",
+    )
     args = parser.parse_args(argv)
 
     paths: list[Path] = list(args.input)
@@ -119,6 +137,53 @@ def main(argv: list[str] | None = None) -> int:
         f"Building matrix batch from {len(extractions)} skill(s) into {args.out_dir} ...",
         file=sys.stderr,
     )
+
+    # ---- Stage 0: resolve taxonomy --------------------------------------
+    taxonomy: Taxonomy | None = None
+    if not args.single_stage:
+        if args.taxonomy is not None:
+            print(f"[taxonomy] loading from {args.taxonomy} ...", file=sys.stderr)
+            data = json.loads(Path(args.taxonomy).read_text(encoding="utf-8"))
+            taxonomy = Taxonomy.from_dict(data)
+            if not taxonomy.kinds:
+                print(
+                    f"error: --taxonomy {args.taxonomy} has no kinds",
+                    file=sys.stderr,
+                )
+                return 2
+        else:
+            if not args.domain:
+                print(
+                    "error: --domain is required (or pass --taxonomy <file>) "
+                    "to propose a per-domain capability taxonomy.",
+                    file=sys.stderr,
+                )
+                return 2
+            print(
+                f"[taxonomy] proposing for domain={args.domain!r} from "
+                f"{len(extractions)} skill(s) ...",
+                file=sys.stderr,
+            )
+            taxonomy = generator.propose_taxonomy(
+                domain=args.domain, extractions=extractions
+            )
+            print(
+                f"[taxonomy] -> domain={taxonomy.domain!r}, "
+                f"{len(taxonomy.kinds)} kinds: "
+                f"{[k.name for k in taxonomy.kinds]}",
+                file=sys.stderr,
+            )
+
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        (args.out_dir / "taxonomy.json").write_text(
+            json.dumps(taxonomy.to_dict(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            f"[taxonomy] wrote {args.out_dir / 'taxonomy.json'}",
+            file=sys.stderr,
+        )
+
     analysis = None
     if args.single_stage:
         print("[clustering] single-stage (legacy) ...", file=sys.stderr)
@@ -128,7 +193,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("[clustering] two-stage: decompose_atoms + mechanical merge ...", file=sys.stderr)
         analysis = generator.analyze_capabilities(
-            query=args.query, extractions=extractions, normalize=not args.no_normalize
+            query=args.query,
+            extractions=extractions,
+            taxonomy=taxonomy,
+            normalize=not args.no_normalize,
         )
     print(
         f"[clustering] -> {len(analysis.capabilities)} capabilities, "

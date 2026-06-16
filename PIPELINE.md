@@ -81,33 +81,38 @@ SKILL.md  ─►  skill_extractor  ─►  task_generation.matrix_cli  ──►
 - `--query "Compare doc-skill capabilities ..."`：高层评测意图
 - `--input <skill_extraction.json> ...` 或 `--input-glob`
 - `--out-dir <batch_dir>`
+- `--domain "<domain>"`：评测场景名（自由字符串），用于 stage 0 给 LLM 提示当前是哪个域。**第一次跑某个域必填**（除非传 `--taxonomy`）。
+- `--taxonomy <taxonomy.json>`：可选，跳过 stage 0 直接复用上次跑出的 taxonomy。同域多次跑想锁住命名约定时用。
 - `--no-validate / --validator-timeout / --no-pip-install / --repair-attempts`：生成后是否本地 sanity 跑通 pytest
 - LLM 配置 + `--max-tokens / --temperature`
 
 **原理**：
-1. 用 LLM 按 schema 把 skill 的 capability 列表整合成全局的 `CapabilityAnalysis`（一组互斥的、有清晰描述+判别维度的 capability）。
-2. 对每个 capability，LLM 生成 `GeneratedTask`：
+1. **Stage 0 — propose_taxonomy**（新增）：把 `--domain` + 所有 skill 的精简提取喂给 LLM，让它**针对这一批 skill 自己提一份 taxonomy**：定义 4–9 个互斥的 `kind`（READ/RENDER/EDIT/SOLVE...，按域而异）、modality 命名空间（开放或闭枚举 + examples）、id 格式、3–6 条 few-shot。这份 taxonomy 落到 `out_dir/taxonomy.json` 并作为后续 stage 1/3 的强约束。传了 `--taxonomy` 就跳过这步。
+2. **Stage 1 — decompose_atoms**：用 LLM 按 stage 0 的 taxonomy 把每个 skill 的 capability 列表拆成原子操作（`{skill_id: [atom...]}`）。`atom.kind` 必须来自 taxonomy；非法 kind 直接 raise（**不兜底**）。
+3. **Stage 2 — mechanical merge**：按 atom id 求并集，每个 unique id 一列；同 id 跨 skill 的 kind 必须一致，否则 raise。
+4. **Stage 3 — normalize_capabilities**：第二次 LLM 调用，对合并后的 capability 列表做 absorb/expand 重写（`cap-read-document` 收编到 `cap-read-pdf` / 拆成多列 specific），同样受 taxonomy 约束。
+5. 对每个 capability，LLM 生成 `GeneratedTask`（domain-neutral prompt，不再硬编码 PDF/openpyxl 范例）：
    - `prompt`：告诉 agent 要做什么（用户视角自然语言）
-   - `assets`：起始输入文件（如待读取的 docx、待转换的图片）
-   - `candidate_solutions`：写给 LLM 自己看的解题思路（不会进 agent prompt）
-   - `discriminators` → `tests/test_outputs.py`：pytest 判别器，每个 `Discriminator` 编译成 `class TestOutputs` 等不同类，按类粒度算 pass-rate
-3. `validator` 把生成的 task 临时跑一遍 pytest（带 candidate solution 当作模拟 agent 输出）确认题目自洽，不过就 raise（**不兜底**）。
-4. `bundle_writer` 写入磁盘成一个 batch：
+   - `assets`：起始输入文件
+   - `discriminators` → `tests/test_outputs.py`：pytest 判别器
+6. `validator` 临时跑一遍 pytest 确认题目自洽，不过就 raise（**不兜底**）。
+7. `bundle_writer` 写入磁盘：
    ```
    batch_<id>/
+     taxonomy.json              # stage 0 产物，本次跑的命名约定
      capabilities.json          # CapabilityAnalysis
-     skill_capability_map.json  # {skill_id: [capability_id, ...]}  谁声明做哪些
+     skill_capability_map.json  # {skill_id: [capability_id, ...]}
      tasks/<capability_id>/     # 每个 capability 一个 SkillsBench bundle
-        prompt.md / requirements.txt / inputs/* / tests/test_outputs.py / ...
-     build_report.json          # 生成日志
+     build_report.json
    ```
 
 **输出**：上面这个 batch 目录，是后面 task_runner 的唯一输入。
 
 **实际产物**：`outputs/matrix_batch_v2/`
-- `capabilities.json` / `capabilities_full.json` — 15 个互斥能力
-- `skill_capability_map.json` — 5 个 skill 各自声明哪些 capability
-- `tasks/<cap_id>/` — 15 个 SkillsBench task bundle
+- `taxonomy.json` — 当次跑的 kind 列表 + modality 命名空间 + few-shot
+- `capabilities.json` / `capabilities_full.json` — 互斥能力列表
+- `skill_capability_map.json` — 每个 skill 声明哪些 capability
+- `tasks/<cap_id>/` — 每个 capability 的 SkillsBench task bundle
 - `build_report.json` — 生成阶段日志
 
 ---
@@ -226,11 +231,25 @@ for s in doc-process-4.1.1 docx-compare-1.0.2 document-reader-1.0.0 \
     --out   $V2/outputs/extractions/$s.json
 done
 
-# 2) 生成矩阵 batch
+# 2) 生成矩阵 batch（含 stage 0 自动提 taxonomy）
 python -m dynamic_skill_eval_v2.task_generation.matrix_cli \
   --query "Compare doc-skill capabilities for an evaluation matrix." \
+  --domain "document processing" \
   --input-glob "$V2/outputs/extractions/*.json" \
   --out-dir $V2/outputs/matrix_batch_v2
+
+#    跨域跑：换 --domain 即可
+# python -m dynamic_skill_eval_v2.task_generation.matrix_cli \
+#   --query "Compare draw-skill capabilities for an evaluation matrix." \
+#   --domain "image drawing" \
+#   --input-glob "$V2/outputs/extractions/draw-*.json" \
+#   --out-dir $V2/outputs/matrix_batch_draw
+#
+#    想锁住一份 taxonomy 复用：
+# python -m dynamic_skill_eval_v2.task_generation.matrix_cli \
+#   --taxonomy $V2/outputs/matrix_batch_v2/taxonomy.json \
+#   --input-glob "$V2/outputs/extractions/*.json" \
+#   --query "..." --out-dir $V2/outputs/matrix_batch_v3
 
 # 3) 跑矩阵（skill）— qwen3.6-flash
 python -m dynamic_skill_eval_v2.task_runner.matrix_cli \

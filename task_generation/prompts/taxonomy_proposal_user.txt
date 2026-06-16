@@ -1,0 +1,96 @@
+你正在为一组 skill 设计**专属的 capability 命名 taxonomy**。
+
+下游会用这份 taxonomy 把每个 skill 的 capability_candidates 拆解成「原子能力」，
+所以你定义的 kind 必须能完整覆盖这些 skill 真实声明的所有原子动作，且**互斥不重叠**。
+
+============================================================
+背景 / 你的任务
+============================================================
+
+domain：$domain
+（这是用户给的场景名，比如 "document processing"、"code refactoring"、"image
+drawing"、"web scraping"。不是必须照搬，但要符合场景。）
+
+下面会给你 N 个 skill 的精简提取（skills_payload）。请通读所有 skill 的
+capability_candidates，归纳出这组 skill 在动作层面**实际涉及到的几类操作**，
+并给出 id 命名约定，让下游可以稳定拆解和聚类。
+
+⚠️ 你不是给"通用计算"造分类，而是给**这一批 skill** 造分类。
+   - skill 用不到的动作，不要预留（"为以后扩展"是错的）。
+   - skill 用到了的动作，必须有 kind 涵盖。
+
+============================================================
+要求
+============================================================
+
+1. **kinds**：4–9 个互斥操作类别。每个 kind 给：
+   - name：全大写英文，单词或下划线连接（READ / RENDER / EDIT / SOLVE_PROBLEM）。
+   - description：一句话说明边界——什么算这一类，什么不算。
+   要让下游 LLM 在拆 candidate 时能明确把每个动作只落到一个 kind。
+
+2. **modality_namespace**：定义 id 中"操作对象/产物"的命名空间。
+   - convention：命名规则（kebab-case、小写、形容数据形态）。
+   - examples：3–8 个**这批 skill 真实涉及的** modality 示例（pdf / png /
+     ascii-art / jupyter-notebook / json-config / svg ...）。
+   - open：bool。当 examples 不能穷举所有可能 modality 时设 true（允许下游按需新增）。
+     对 modality 高度有限的域可以设 false。
+
+3. **id_format**：capability id 的字面格式模板。默认
+   `cap-<kind-lowercase>-<primary-modality>[-<qualifier>]`，
+   但可以根据 domain 改（例如算法题：`cap-<kind-lowercase>-<topic>`）。
+
+4. **few_shot**：3–6 个**直接来自当前 skills_payload** 的最具代表性 capability
+   示例。每条给：
+   - id：按你定义的 id_format 写出
+   - kind：必须是上面 kinds 里的一个 name
+   - name：人类可读短名
+   - rationale：一句话解释为什么这是该 kind / modality 的范例
+
+5. **notes**（可选）：本域命名上特别需要提醒下游 LLM 的事项。比如"INFER
+   只能用于产生输入里没有的内容""image-edit 和 image-render 不要混淆"等。
+
+============================================================
+反例（不要这样做）
+============================================================
+
+- ✗ 套现成的 ETL 9 类（READ/WRITE/TRANSFORM/...）但 skill 里实际只在做生成，没有"读"的动作。
+- ✗ 把 modality 写成全是 pdf/docx/xlsx 但 skill 真实在处理图片。
+- ✗ kind 过多（>9 个），导致下游拆得过细，列爆炸。
+- ✗ kind 过少（<4 个）然后 description 含糊，下游分不清。
+- ✗ few_shot 用 skills_payload 之外编造的能力。
+
+============================================================
+输出格式（只输出 JSON，禁止围栏与说明文字）
+============================================================
+
+{
+  "domain": "<重述/精化用户给的 domain，可以更精准>",
+  "kinds": [
+    { "name": "READ",     "description": "..." },
+    { "name": "WRITE",    "description": "..." },
+    { "name": "TRANSFORM","description": "..." }
+  ],
+  "modality_namespace": {
+    "convention": "lowercase, kebab-case; reflect data form not skill name",
+    "examples":   ["pdf", "docx", "png"],
+    "open":       true
+  },
+  "id_format": "cap-<kind-lowercase>-<primary-modality>[-<qualifier>]",
+  "few_shot": [
+    {
+      "id": "cap-read-pdf",
+      "kind": "READ",
+      "name": "Read PDF",
+      "rationale": "doc-process declares it as a base reader; matches READ + pdf modality."
+    }
+  ],
+  "notes": ""
+}
+
+============================================================
+输入
+============================================================
+
+skills_payload（精简提取——id / name / description / capability_candidates）：
+
+$skills_payload

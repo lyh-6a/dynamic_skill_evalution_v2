@@ -1,7 +1,9 @@
 """Matrix-mode batch builder.
 
 Pipeline:
-  1. ``analyze_capabilities(query, extractions)`` -> CapabilityAnalysis
+  1. Caller runs ``propose_taxonomy`` then ``analyze_capabilities(query,
+     extractions, taxonomy)`` to produce a ``CapabilityAnalysis`` and passes
+     it to ``build()`` as ``analysis``.
   2. for each capability:
         ``generate_for_capability(query, capability)`` -> GeneratedTask
         ``TaskValidator.validate(task)``       -> renderer / solution / pytest
@@ -106,8 +108,9 @@ class MatrixBatchBuilder:
         tasks_root.mkdir(exist_ok=True)
 
         if analysis is None:
-            analysis = self.generator.analyze_capabilities(
-                query=query, extractions=extractions
+            raise ValueError(
+                "MatrixBatchBuilder.build: analysis must be supplied by the caller "
+                "(stage 0/1/3 require a Taxonomy that's only assembled in matrix_cli)."
             )
 
         # capabilities.json + skill_capability_map.json: write *before* any

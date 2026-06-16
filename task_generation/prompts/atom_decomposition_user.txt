@@ -1,72 +1,64 @@
 你正在为一组 skill 做**原子能力分解**。
 
 每个 skill 的 capability_candidates 实际上是由若干**原子操作**组合而成的。
-例如 "translate PDF" 这一条 candidate，本质上 = 读 PDF + 翻译文本 + 写 PDF + 保持样式
-四个原子的组合。"convert CSV to JSON" = 读 CSV + 转换表格语义 + 写 JSON。
-
 你的任务：把每个 skill 的 candidates 拆解成原子操作的集合。**所有 skill 共用同一个
 canonical 命名空间**——同一个原子在不同 skill 里必须共享同一个 id。
 
-⚠️ 这一步**不是**找差异，**不是**把 candidate 按"任务"聚类（比如把"翻译"和"转换"
-当成两列）。把"翻译"拆开看，里面的"读 PDF"和"读 PDF 文本"做转换的"读 PDF" 是
-**同一个原子**——它们必须落到同一个 id 上。
+⚠️ 这一步**不是**找差异，**不是**把 candidate 按"任务"聚类。
+   把组合 candidate 拆开看，里面相同的子操作必须落到**同一个 id** 上。
 
 ============================================================
-原子分类（kind）
+本次评测的 taxonomy（由 stage 0 提出，作为这次跑的强约束）
 ============================================================
 
-- READ       从某种格式读取（只输入→中间表示，不变换，不写）
-- WRITE      把内容写入某种格式（中间表示→输出，不变换语义）
-- TRANSFORM  在两种格式 / schema 之间做结构性转换（如表格→JSON，含字段映射）
-- EXTRACT    从混合内容中抽取子结构（表、字段、章节、元数据）
-- INFER      用模型 / 规则推理产生**输入里不直接存在**的内容（翻译、摘要、分类、问答）
-- PRESERVE   保持源文档的某种属性（样式、布局、字体、元数据）
-- COMPARE    对比多个文档 / 数据集，产出差异
-- COMPOSE    把多个输入合成一个输出（合并、拼接、批处理）
-- VALIDATE   校验 / 检查结构合规性
+domain：$domain
 
-每个原子**只能有一个 kind**。
+允许使用的 kind（**这一批 skill 必须只在这几类里挑**，不许新增、不许大小写变化）：
 
+$kinds_block
+
+modality 命名空间：
+
+$modality_block
+
+id 格式：$id_format
+
+few-shot 范例（直接来自本批 skill，参考其粒度和命名风格）：
+
+$few_shot_block
+
+$notes_block
 ============================================================
 canonical id 规则
 ============================================================
 
-格式： cap-<kind>-<primary_modality>[-<qualifier>]
-
-  kind             小写：read / write / transform / extract / infer / preserve / compare / compose / validate
-  primary_modality 小写： pdf / docx / xlsx / csv / json / markdown / html / png / jpg / txt / pptx /
-                          image / tabular / text / multi-document
-  qualifier        可选；只有"否则会冲突"才加（如 cap-read-pdf-native-text vs cap-read-pdf-scanned）
-
-特殊场景：
-  - INFER 用任务名做 modality：cap-infer-translation, cap-infer-summary, cap-infer-classification
-  - PRESERVE 用属性做 modality：cap-preserve-style-docx, cap-preserve-layout-pdf
-  - TRANSFORM 用 source-target：cap-transform-tabular-to-json
-  - COMPARE 用对象类型：cap-compare-documents
-  - COMPOSE 用产物：cap-compose-pdf-from-images
+- 严格按 `id_format` 拼写。kind 部分是上面 kinds 里某个 name 的小写。
+- modality 部分用 `modality_namespace.examples` 列出的形态；
+  - 当 `modality_namespace.open == true` 且 examples 不够覆盖时，可以新增（保持
+    convention）；
+  - 当 `open == false` 时**不许**自造 modality，必须从 examples 里选。
+- qualifier 只有"否则会冲突"才加（如 native-text vs scanned）。
 
 ⚠️ **同一概念必须用同一 id**：
-  -  skill A "translate DOCX" 拆出 cap-read-docx, cap-infer-translation, cap-write-docx, cap-preserve-style-docx
-  -  skill B "convert DOCX to Markdown" 拆出 cap-read-docx (**与 A 共享！**), cap-transform-docx-to-markdown, cap-write-markdown
-  -  不允许 cap-read-docx 和 cap-extract-docx-text 都列出去而它们意义其实一样。
+  - skill A 出的 cap-read-pdf 和 skill B 出的 cap-read-pdf 是同一列。
+  - 不允许 cap-read-pdf 和 cap-extract-pdf-text 都列出去而它们意义其实一样。
 
 ============================================================
 分解规则
 ============================================================
 
-1. **覆盖性**：candidate 的 actions 列表（READ/WRITE/TRANSFORM/INFER 等）里出现的每个动作，
-   都必须能在该 skill 的原子里找到对应。
-   - 如果一个 candidate actions 是 [READ, TRANSFORM, WRITE]，至少要分出一个 READ 类原子、
-     一个 WRITE 类原子、一个 TRANSFORM/EXTRACT/INFER 类原子。
-   - 如果 candidate 描述里提到"保持样式"、"保留格式"，要单独出一个 PRESERVE 原子。
+1. **覆盖性**：candidate 里描述的每个独立动作（读、写、转换、推理、保留、对比……）
+   都必须有对应的原子。如果一个 candidate 提到"保持样式"或"保留格式"，按 taxonomy
+   里允许的 kind 找最贴近的那一类（一般是 PRESERVE 类——若 taxonomy 没有这类则
+   忽略，不要硬塞）。
 
 2. **去重**：一个 skill 内同 id 的原子只列一次。
-   skill 有 csv→json、csv→xlsx、csv→html 三个 candidate，→ 该 skill 列一次 cap-read-csv，
-   再加 cap-write-json、cap-write-xlsx、cap-write-html 各一次。
+   skill 有 csv→json、csv→xlsx、csv→html 三个 candidate，→ 该 skill 列一次
+   读 csv 的原子，再加各写 json/xlsx/html 的原子各一次。
 
 3. **不要造原子**：
    - 不要把 skill 描述里没有的能力填进去（不许"补齐"）。
-   - 不要把 INFER 和 TRANSFORM 混淆——单纯字段重命名是 TRANSFORM；自然语言翻译是 INFER。
+   - 不要把语义不同的动作合到同一个 kind（taxonomy 里 kind 之间是互斥的）。
 
 4. **每个 skill 的 atoms 不能为空。**
 
@@ -80,22 +72,13 @@ canonical id 规则
       "skill_id": "<exact skill_id from input>",
       "atoms": [
         {
-          "id": "cap-read-pdf",
-          "kind": "READ",
-          "name": "Read PDF",
-          "description": "Extract reading-order text and structure from a PDF file.",
-          "input_shape": "A .pdf file (with embedded text or scanned).",
-          "output_shape": "Text content or structured representation of the PDF.",
-          "judgement_dimensions": ["correctness", "completeness", "reading_order"]
-        },
-        {
-          "id": "cap-infer-translation",
-          "kind": "INFER",
-          "name": "Translate text",
-          "description": "Translate natural-language text from one language to another while preserving meaning.",
-          "input_shape": "A piece of natural-language text in the source language.",
-          "output_shape": "The same text translated to the target language.",
-          "judgement_dimensions": ["semantic_fidelity", "fluency", "terminology"]
+          "id": "<按 id_format 拼写>",
+          "kind": "<必须是 taxonomy.kinds 中某个 name>",
+          "name": "<人类可读短名>",
+          "description": "<这个能力本身做什么；不要提 skill_id>",
+          "input_shape": "<输入的形态——什么文件 / 数据结构>",
+          "output_shape": "<输出的形态>",
+          "judgement_dimensions": ["<判分维度1>", "<判分维度2>"]
         }
       ]
     }
@@ -109,8 +92,9 @@ canonical id 规则
 - 每个 skill_id 必须是输入 skills_payload 里出现过的 id，不许编造、不许省略前缀版本号。
 - 每个 atom 必须填全 id / kind / name / description / input_shape / output_shape /
   judgement_dimensions（≥1 项）。
+- atom.kind **必须**是上面 taxonomy.kinds 中某个 name（大写）。其他值会被拒绝。
 - description / input_shape / output_shape **不能出现任何 skill_id** —— 它们描述能力本身。
-- 同一 skill 内 id 不重复；跨 skill 同 id 意义必须一致。
+- 同一 skill 内 id 不重复；跨 skill 同 id 意义必须一致（kind / 描述对得上）。
 - 不输出 skill_capability_map（下游会从 skill_id 反推，逐 atom 合并）。
 - 不输出多余字段。
 

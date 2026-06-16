@@ -33,6 +33,7 @@ from dynamic_skill_eval_v2.task_generation.schema import (
     Discriminator,
     DiscriminatorTest,
     GeneratedTask,
+    Taxonomy,
 )
 
 PROMPT_DIR = Path(__file__).parent / "prompts"
@@ -97,6 +98,9 @@ class TaskGenerator:
         ).read_text(encoding="utf-8")
         self._atom_normalization_prompt_template = (
             PROMPT_DIR / "atom_normalization_user.txt"
+        ).read_text(encoding="utf-8")
+        self._taxonomy_proposal_prompt_template = (
+            PROMPT_DIR / "taxonomy_proposal_user.txt"
         ).read_text(encoding="utf-8")
         self._combined_prompt_template = (PROMPT_DIR / "task_combined_user.txt").read_text(encoding="utf-8")
         self._repair_prompt_template = (PROMPT_DIR / "task_repair_user.txt").read_text(encoding="utf-8")
@@ -236,35 +240,160 @@ class TaskGenerator:
     # Canonical atom kinds that the decomposition prompt is allowed to emit.
     # If the LLM returns anything else we raise — silent kind drift is exactly
     # what would break cross-skill column alignment.
-    _ATOM_KINDS = {
-        "READ", "WRITE", "TRANSFORM", "EXTRACT", "INFER",
-        "PRESERVE", "COMPARE", "COMPOSE", "VALIDATE",
-    }
+    # Stage-1/3 atom kinds are no longer hardcoded — they come from the
+    # per-run Taxonomy produced by ``propose_taxonomy``. See ``decompose_atoms``
+    # for the validation that uses ``taxonomy.kind_names``.
+
+    def propose_taxonomy(
+        self,
+        domain: str,
+        extractions: list[SkillExtraction],
+    ) -> Taxonomy:
+        """Stage 0: ask the LLM to propose a per-domain capability taxonomy.
+
+        The returned taxonomy is the canonical naming convention for stages
+        1, 2 and 3 of this run. It captures:
+
+        - which operation kinds (``READ`` / ``RENDER`` / ``SOLVE`` / ...) the
+          decompose stage is allowed to use,
+        - the modality namespace (open or closed, with examples),
+        - the id format,
+        - a few-shot of skill-grounded canonical capability ids.
+
+        No fallback: if the LLM returns an empty kinds list, an empty domain,
+        or any kind without a non-empty name, raise ValueError. Stages 1 and 3
+        depend on the kinds set being well-defined.
+        """
+        domain_clean = domain.strip()
+        if not domain_clean:
+            raise ValueError("propose_taxonomy: --domain must be non-empty")
+        skills_payload = [self._compact_extraction(e) for e in extractions]
+        prompt = Template(self._taxonomy_proposal_prompt_template).safe_substitute(
+            {
+                "domain": domain_clean,
+                "skills_payload": json.dumps(skills_payload, ensure_ascii=False, indent=2),
+            }
+        )
+        data = self.client.chat_json(
+            system=self._system_prompt,
+            user=prompt,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+        )
+        self._cum_tokens += int(getattr(self.client, "last_usage_tokens", 0) or 0)
+
+        if not isinstance(data, dict):
+            raise ValueError(f"propose_taxonomy: LLM returned non-dict payload: {data!r}")
+        taxonomy = Taxonomy.from_dict(data)
+        if not taxonomy.domain:
+            raise ValueError(f"propose_taxonomy: payload missing domain: {data!r}")
+        if not taxonomy.kinds:
+            raise ValueError(f"propose_taxonomy: payload has no kinds: {data!r}")
+        seen_kind: set[str] = set()
+        for k in taxonomy.kinds:
+            if not k.name:
+                raise ValueError(f"propose_taxonomy: kind has empty name: {k.to_dict()!r}")
+            if k.name in seen_kind:
+                raise ValueError(f"propose_taxonomy: duplicate kind {k.name!r}")
+            seen_kind.add(k.name)
+        if not isinstance(taxonomy.modality_namespace, dict):
+            raise ValueError(
+                f"propose_taxonomy: modality_namespace must be an object: "
+                f"{taxonomy.modality_namespace!r}"
+            )
+        # few_shot is advisory; just ensure each entry has id+kind if present
+        for ex in taxonomy.few_shot:
+            kn = str(ex.get("kind", "")).strip().upper()
+            if kn and kn not in taxonomy.kind_names:
+                raise ValueError(
+                    f"propose_taxonomy: few_shot entry uses kind {kn!r} not in kinds set"
+                )
+        return taxonomy
+
+    @staticmethod
+    def _render_taxonomy_blocks(taxonomy: Taxonomy) -> dict[str, str]:
+        """Format taxonomy fields as injectable prompt blocks.
+
+        Used by stage 1 (decompose_atoms) and stage 3 (normalize_capabilities)
+        to splice the same taxonomy into both prompts. Keeping the rendering
+        here means the prompt files only carry placeholders.
+        """
+        kinds_lines = [
+            f"  - {k.name}: {k.description}".rstrip()
+            for k in taxonomy.kinds
+        ]
+        kinds_block = "\n".join(kinds_lines) if kinds_lines else "  (none)"
+
+        mn = taxonomy.modality_namespace or {}
+        convention = str(mn.get("convention", "")).strip() or "lowercase, kebab-case"
+        examples = mn.get("examples") or []
+        examples_str = ", ".join(str(x) for x in examples) if examples else "(none provided)"
+        open_flag = bool(mn.get("open", True))
+        modality_block = (
+            f"  convention: {convention}\n"
+            f"  examples:   {examples_str}\n"
+            f"  open:       {str(open_flag).lower()}"
+        )
+
+        few_shot_lines: list[str] = []
+        for ex in taxonomy.few_shot:
+            eid = str(ex.get("id", "")).strip()
+            ek = str(ex.get("kind", "")).strip().upper()
+            en = str(ex.get("name", "")).strip()
+            if not eid:
+                continue
+            line = f"  - {eid}  ({ek})  {en}".rstrip()
+            rat = str(ex.get("rationale", "")).strip()
+            if rat:
+                line += f"\n      {rat}"
+            few_shot_lines.append(line)
+        few_shot_block = "\n".join(few_shot_lines) if few_shot_lines else "  (none)"
+
+        notes = taxonomy.notes.strip()
+        notes_block = (
+            f"额外注意事项（taxonomy.notes）：\n{notes}\n\n"
+            if notes
+            else ""
+        )
+
+        return {
+            "domain": taxonomy.domain,
+            "kinds_block": kinds_block,
+            "modality_block": modality_block,
+            "id_format": taxonomy.id_format,
+            "few_shot_block": few_shot_block,
+            "notes_block": notes_block,
+        }
+
 
     def decompose_atoms(
         self,
         query: str,
         extractions: list[SkillExtraction],
+        taxonomy: Taxonomy,
     ) -> dict[str, list[dict[str, Any]]]:
-        """Stage 1 of two-stage capability clustering.
+        """Stage 1 of the capability clustering pipeline.
 
         Ask the LLM to break each skill's capability_candidates into a set of
-        canonically-named atomic operations (READ/WRITE/TRANSFORM/INFER/...).
-        Returns ``{skill_id: [atom_dict, ...]}``. The atom dict shape matches
-        Capability fields plus a ``kind`` field.
+        canonically-named atomic operations whose ``kind`` MUST come from the
+        per-run ``taxonomy`` (proposed by stage 0). Returns
+        ``{skill_id: [atom_dict, ...]}``.
 
         No fallback: if the LLM returns malformed payload, an unknown skill_id,
-        an unknown ``kind``, or an empty atom list for any skill, this raises
-        ValueError. Stage-2 merge depends on the ids being canonical, so silent
-        recovery here would silently weaken the matrix.
+        a kind not declared in the taxonomy, or an empty atom list for any
+        skill, this raises ValueError.
         """
+        if not taxonomy.kinds:
+            raise ValueError("decompose_atoms: taxonomy has no kinds")
         skills_payload = [self._compact_extraction(e) for e in extractions]
         known_skill_ids = {e.skill_id for e in extractions}
+        substitutions = {
+            "query": query.strip(),
+            "skills_payload": json.dumps(skills_payload, ensure_ascii=False, indent=2),
+            **self._render_taxonomy_blocks(taxonomy),
+        }
         prompt = Template(self._atom_decomposition_prompt_template).safe_substitute(
-            {
-                "query": query.strip(),
-                "skills_payload": json.dumps(skills_payload, ensure_ascii=False, indent=2),
-            }
+            substitutions
         )
         data = self.client.chat_json(
             system=self._system_prompt,
@@ -314,10 +443,10 @@ class TaskGenerator:
                     raise ValueError(
                         f"decompose_atoms[{sid}]: atom id {aid!r} must start with 'cap-'"
                     )
-                if kind not in self._ATOM_KINDS:
+                if kind not in taxonomy.kind_names:
                     raise ValueError(
                         f"decompose_atoms[{sid}]: atom {aid!r} has invalid kind {kind!r}; "
-                        f"allowed: {sorted(self._ATOM_KINDS)}"
+                        f"allowed (from taxonomy): {sorted(taxonomy.kind_names)}"
                     )
                 for f in ("name", "description", "input_shape", "output_shape"):
                     if not str(a.get(f, "")).strip():
@@ -357,19 +486,20 @@ class TaskGenerator:
         self,
         query: str,
         extractions: list[SkillExtraction],
+        taxonomy: Taxonomy,
         normalize: bool = True,
     ) -> CapabilityAnalysis:
         """Three-stage capability clustering (default).
 
         Stage 1: ``decompose_atoms`` — LLM breaks each skill's candidates into
-            canonical atomic operations.
+            canonical atomic operations following ``taxonomy``.
         Stage 2: mechanical merge — group atoms by id across skills. Each unique
             id becomes one capability column. ``skill_ids`` is the union of skills
             whose atom set contains that id. No further LLM call.
-        Stage 3: ``normalize_capabilities`` — second LLM call that scans the
-            merged column list and produces an absorb/expand rewrite map for
-            semantic duplicates (``cap-read-document`` vs ``cap-read-pdf``).
-            Then mechanical apply: rename absorbed ids, re-merge skill_ids.
+        Stage 3: ``normalize_capabilities`` — second LLM call (also bound to
+            ``taxonomy``) that scans the merged column list and produces an
+            absorb/expand rewrite map for semantic duplicates. Then mechanical
+            apply: rename absorbed ids, re-merge skill_ids.
 
         Cross-skill consistency check: if two skills both emit id X but with
         conflicting ``kind`` values, raise — that means the LLM canonicalised
@@ -377,12 +507,12 @@ class TaskGenerator:
         produce a bogus column.
 
         Pass ``normalize=False`` to skip stage 3 (saves one LLM call but leaves
-        the cap-read-document / cap-read-pdf style duplicates in the matrix).
+        umbrella vs specific duplicates in the matrix).
 
         Use ``analyze_capabilities_single_stage`` for the legacy single-call
         path (kept for the CLI ``--single-stage`` flag).
         """
-        per_skill_atoms = self.decompose_atoms(query, extractions)
+        per_skill_atoms = self.decompose_atoms(query, extractions, taxonomy)
         # Stage 2: mechanical merge keyed by atom id.
         merged: dict[str, dict[str, Any]] = {}
         for sid, atoms in per_skill_atoms.items():
@@ -418,27 +548,31 @@ class TaskGenerator:
 
         # Stage 3 (optional): LLM-driven semantic normalization.
         if normalize:
-            merged = self._apply_normalization(query=query, merged=merged)
+            merged = self._apply_normalization(query=query, merged=merged, taxonomy=taxonomy)
 
-        analysis = self._build_analysis_from_merged(merged)
+        analysis = self._build_analysis_from_merged(merged, taxonomy=taxonomy)
         self._last_capability_analysis = analysis
         return analysis
 
     def _build_analysis_from_merged(
-        self, merged: dict[str, dict[str, Any]]
+        self,
+        merged: dict[str, dict[str, Any]],
+        taxonomy: Taxonomy | None = None,
     ) -> CapabilityAnalysis:
         """Turn a stage-2 (or stage-3) merged dict into a CapabilityAnalysis.
 
-        Sorts capabilities deterministically by (kind, id). Builds the inverted
-        ``skill_capability_map`` from each capability's ``skill_ids``.
+        Sorts capabilities deterministically by (kind-order, id). When a
+        ``taxonomy`` is provided, kind-order matches the taxonomy's declared
+        order. Without a taxonomy (legacy single-stage path) order is
+        alphabetical by kind name.
         """
-        kind_order = {k: i for i, k in enumerate([
-            "READ", "EXTRACT", "TRANSFORM", "INFER",
-            "PRESERVE", "COMPARE", "COMPOSE", "VALIDATE", "WRITE",
-        ])}
+        if taxonomy is not None and taxonomy.kinds:
+            kind_order = {k.name: i for i, k in enumerate(taxonomy.kinds)}
+        else:
+            kind_order = {}
         ordered_ids = sorted(
             merged.keys(),
-            key=lambda x: (kind_order.get(merged[x]["kind"], 99), x),
+            key=lambda x: (kind_order.get(merged[x]["kind"], 99), merged[x]["kind"], x),
         )
         capabilities = [
             Capability(
@@ -464,14 +598,17 @@ class TaskGenerator:
         self,
         query: str,
         merged: dict[str, dict[str, Any]],
+        taxonomy: Taxonomy,
     ) -> list[dict[str, Any]]:
         """Stage 3 LLM call: ask for a list of absorb/expand merges over the
         already-merged capability list. Returns a validated list of merge
         records — does NOT apply them. Pure I/O + validation; the caller (or
         ``_apply_normalization``) does the rewrite.
 
-        No fallback: if the LLM emits a merge that references unknown ids,
-        crosses kinds, or self-absorbs, raise ValueError.
+        The same ``taxonomy`` from stage 0/1 is injected so the normalizer
+        cannot drift kind names. No fallback: if the LLM emits a merge that
+        references unknown ids, crosses kinds, or self-absorbs, raise
+        ValueError.
         """
         capabilities_payload = [
             {
@@ -485,13 +622,15 @@ class TaskGenerator:
             }
             for v in merged.values()
         ]
+        substitutions = {
+            "query": query.strip(),
+            "capabilities_payload": json.dumps(
+                capabilities_payload, ensure_ascii=False, indent=2
+            ),
+            **self._render_taxonomy_blocks(taxonomy),
+        }
         prompt = Template(self._atom_normalization_prompt_template).safe_substitute(
-            {
-                "query": query.strip(),
-                "capabilities_payload": json.dumps(
-                    capabilities_payload, ensure_ascii=False, indent=2
-                ),
-            }
+            substitutions
         )
         data = self.client.chat_json(
             system=self._system_prompt,
@@ -604,6 +743,7 @@ class TaskGenerator:
         self,
         query: str,
         merged: dict[str, dict[str, Any]],
+        taxonomy: Taxonomy,
     ) -> dict[str, dict[str, Any]]:
         """Run stage-3 (normalize_capabilities + mechanical rewrite).
 
@@ -612,7 +752,7 @@ class TaskGenerator:
         each expand merge, copy absorbed skill_ids into every expand_to target
         and drop the source. Returns the rewritten dict.
         """
-        merges = self.normalize_capabilities(query=query, merged=merged)
+        merges = self.normalize_capabilities(query=query, merged=merged, taxonomy=taxonomy)
         if not merges:
             return merged
         out: dict[str, dict[str, Any]] = {k: dict(v, skill_ids=list(v["skill_ids"])) for k, v in merged.items()}

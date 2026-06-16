@@ -10,7 +10,7 @@
 - 题目**不绑定具体 skill**：你看不到 skill 列表，也不许在题面里提到任何 skill 名。
   题面是"给一个通用能力的最小考题"，谁声称有这个能力都跑同一道题。
 - **只测这一条能力**：所有断言都落在 capability.judgement_dimensions 内；
-  不要顺手考别的（不要让 PDF 阅读题把"翻译质量"也考一道）。
+  不要顺手考别的（比如读取类题目就别捎带考"翻译质量"）。
 - **最小输入**：能用一个文件就别用两个；能用 5 行内容就别造 50 行。
   题目越小，每个 cell 的 wall-clock 越短，矩阵跑得越快。
 
@@ -26,7 +26,7 @@ solution 产物上断言。我们会在你输出上跑一遍完整链路，跑�
 ============================================================
 
 {
-  "task_id": "kebab-case 全局唯一，建议含 capability id 前缀，例如 'cap-read-pdf-text-mini'",
+  "task_id": "kebab-case 全局唯一，建议含 capability id 前缀",
   "name": "短名（中文/英文均可）",
 
   "instruction_md": "祈使句给被测 agent；用绝对路径 /root/...；只描述这一个能力要做什么",
@@ -37,8 +37,8 @@ solution 产物上断言。我们会在你输出上跑一遍完整链路，跑�
 
   "assets": [
     {
-      "path": "input.pdf",                 // 相对 environment/
-      "container_path": "/root/input.pdf",
+      "path": "<相对 environment/ 的输入文件名>",
+      "container_path": "/root/<同上>",
       "kind": "binary",                    // "text" | "binary"
       "renderer_py": "..."                 // kind=binary 时必填
     }
@@ -65,9 +65,10 @@ renderer_py（kind="binary"）规则
     OUTPUT_PATH        —— 必须把生成的二进制文件**写到这个路径**
 - 不要硬编码 /root/...，不要假设当前目录，一律用 OUTPUT_PATH。
 - 必须把 ground_truth 的关键字段都体现在生成的文件里。
-- PDF 文本布局陷阱：同一行的标签和数值拼成**一个字符串**再 drawString，
-  不要分两次画 —— 否则 pdfminer 抽出来标签和数字会错位。
-- 校验环境已预装常用的 PDF/图像/数据生成库（reportlab/pillow/openpyxl/python-docx/pdfplumber 等）。
+- 选择能力 capability.input_shape 描述的 modality 对应的标准 Python 库；
+  校验环境装了一组主流处理库（reportlab / pillow / openpyxl / python-docx /
+  pdfplumber / matplotlib 等）。如果你的能力要用别的库，请确认它属于"主流且
+  pip 一行装上"——校验环境会按需 pip install。
 
 ============================================================
 solution_py 规则
